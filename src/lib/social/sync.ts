@@ -4,8 +4,8 @@ import type { SocialState } from "../types";
 
 /** Local persistence + cross-tab live updates for friends/chats, mirroring lib/store/sync.ts. */
 
-const SOCIAL_KEY = "tripsync:social:v1";
-const CHANNEL = "tripsync:social:v1";
+const SOCIAL_KEY = "tripsync:social:v2";
+const CHANNEL = "tripsync:social:v2";
 
 type Msg = { type: "social"; state: SocialState };
 

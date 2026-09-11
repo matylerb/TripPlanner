@@ -64,6 +64,8 @@ export function plural(n: number, word: string, pluralWord?: string) {
   return `${n} ${n === 1 ? word : pluralWord ?? word + "s"}`;
 }
 
+export const DEMO_NAMES = ["Sanidhya", "Aishwarya", "Taylor", "Adam", "Likhith"];
+
 export const MEMBER_COLORS = [
   "#d4562e",
   "#4d7ea8",

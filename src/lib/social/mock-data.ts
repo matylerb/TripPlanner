@@ -5,40 +5,40 @@ import { MEMBER_COLORS } from "../format";
 const ago = (mins: number) => new Date(Date.now() - mins * 60_000).toISOString();
 
 export const FRIENDS: Friend[] = [
-  { id: "fr_maya", name: "Maya Chen", color: MEMBER_COLORS[0], location: "Lisbon, PT", bio: "Books flights within the hour, packs the night before.", mutualTrips: 4, online: true, lastActiveAt: ago(0) },
-  { id: "fr_jules", name: "Jules Fontaine", color: MEMBER_COLORS[1], location: "Paris, FR", bio: "Museum by day, wine bar by night.", mutualTrips: 2, online: false, lastActiveAt: ago(180) },
-  { id: "fr_sam", name: "Sam Okafor", color: MEMBER_COLORS[2], location: "Austin, TX", bio: "Will find the best tacos within five miles, guaranteed.", mutualTrips: 6, online: true, lastActiveAt: ago(0) },
-  { id: "fr_priya", name: "Priya Nair", color: MEMBER_COLORS[3], location: "Mumbai, IN", bio: "Has a spreadsheet for every trip. No exceptions.", mutualTrips: 3, online: false, lastActiveAt: ago(60 * 20) },
-  { id: "fr_leo", name: "Leo Rossi", color: MEMBER_COLORS[4], location: "Milan, IT", bio: "Peak-bagger. Will suggest a sunrise hike, every time.", mutualTrips: 1, online: true, lastActiveAt: ago(0) },
-  { id: "fr_noor", name: "Noor Haddad", color: MEMBER_COLORS[5], location: "Dubai, AE", bio: "Dive certified, always chasing the next reef.", mutualTrips: 2, online: false, lastActiveAt: ago(360) },
-  { id: "fr_ruby", name: "Ruby Bennett", color: MEMBER_COLORS[6], location: "London, UK", bio: "Theatre kid. Finds the best rooftop bar in any city.", mutualTrips: 5, online: true, lastActiveAt: ago(0) },
-  { id: "fr_kenji", name: "Kenji Watanabe", color: MEMBER_COLORS[7], location: "Osaka, JP", bio: "Ramen scholar. Trusts no 'best ramen in town' list.", mutualTrips: 1, online: false, lastActiveAt: ago(60 * 30) },
+  { id: "fr_sanidhya", name: "Sanidhya", color: MEMBER_COLORS[0], location: "Bengaluru, IN", bio: "Books flights within the hour, packs the night before.", mutualTrips: 4, online: true, lastActiveAt: ago(0) },
+  { id: "fr_aishwarya", name: "Aishwarya", color: MEMBER_COLORS[1], location: "Mumbai, IN", bio: "Has a spreadsheet for every trip. No exceptions.", mutualTrips: 3, online: true, lastActiveAt: ago(0) },
+  { id: "fr_taylor", name: "Taylor", color: MEMBER_COLORS[2], location: "Austin, TX", bio: "Will find the best tacos within five miles, guaranteed.", mutualTrips: 6, online: false, lastActiveAt: ago(90) },
+  { id: "fr_adam", name: "Adam", color: MEMBER_COLORS[3], location: "London, UK", bio: "Peak-bagger. Will suggest a sunrise hike, every time.", mutualTrips: 2, online: true, lastActiveAt: ago(0) },
 ];
 
 export function seedSocial(): SocialState {
   const threads: SocialThread[] = [
-    { id: "th_maya", kind: "dm", memberIds: ["fr_maya"], createdAt: ago(60 * 24 * 3) },
-    { id: "th_sam", kind: "dm", memberIds: ["fr_sam"], createdAt: ago(60 * 24 * 6) },
-    { id: "th_squad", kind: "group", name: "Summer squad", emoji: "🌴", memberIds: ["fr_maya", "fr_sam", "fr_priya"], createdAt: ago(60 * 24 * 5) },
+    { id: "th_sanidhya", kind: "dm", memberIds: ["fr_sanidhya"], createdAt: ago(60 * 24 * 3) },
+    { id: "th_taylor", kind: "dm", memberIds: ["fr_taylor"], createdAt: ago(60 * 24 * 6) },
+    { id: "th_squad", kind: "group", name: "Summer squad", emoji: "🌴", memberIds: ["fr_sanidhya", "fr_aishwarya", "fr_taylor", "fr_adam"], createdAt: ago(60 * 24 * 5) },
   ];
 
   const messages: SocialMessage[] = [
-    // DM with Maya — trip-planning banter
-    { id: nanoid(8), threadId: "th_maya", senderId: "fr_maya", text: "ok I cannot stop thinking about that Lisbon trip you mentioned", createdAt: ago(180) },
-    { id: nanoid(8), threadId: "th_maya", senderId: "me", text: "right?? I keep pricing flights every night like a lunatic", createdAt: ago(176) },
-    { id: nanoid(8), threadId: "th_maya", senderId: "fr_maya", text: "we should just start a real plan. group chat energy only gets us so far", createdAt: ago(170) },
-    { id: nanoid(8), threadId: "th_maya", senderId: "fr_maya", text: "tag me in whenever you set one up 🙏", createdAt: ago(35) },
+    // DM with Sanidhya — trip-planning banter
+    { id: nanoid(8), threadId: "th_sanidhya", senderId: "fr_sanidhya", text: "ok I cannot stop thinking about that Lisbon trip you mentioned", createdAt: ago(180) },
+    { id: nanoid(8), threadId: "th_sanidhya", senderId: "me", text: "right?? I keep pricing flights every night like a lunatic", createdAt: ago(176) },
+    { id: nanoid(8), threadId: "th_sanidhya", senderId: "fr_sanidhya", text: "we should just start a real plan. group chat energy only gets us so far", createdAt: ago(170) },
+    { id: nanoid(8), threadId: "th_sanidhya", senderId: "fr_sanidhya", text: "tag me in whenever you set one up 🙏", createdAt: ago(35) },
 
-    // DM with Sam — shorter, casual
-    { id: nanoid(8), threadId: "th_sam", senderId: "me", text: "still owe you a rematch for that taco crawl ranking", createdAt: ago(400) },
-    { id: nanoid(8), threadId: "th_sam", senderId: "fr_sam", text: "any excuse to eat tacos again, I'm in", createdAt: ago(390) },
-    { id: nanoid(8), threadId: "th_sam", senderId: "fr_sam", text: "let me know the dates whenever you land on something", createdAt: ago(50) },
+    // DM with Taylor — shorter, casual
+    { id: nanoid(8), threadId: "th_taylor", senderId: "me", text: "still owe you a rematch for that taco crawl ranking", createdAt: ago(400) },
+    { id: nanoid(8), threadId: "th_taylor", senderId: "fr_taylor", text: "any excuse to eat tacos again, I'm in", createdAt: ago(390) },
+    { id: nanoid(8), threadId: "th_taylor", senderId: "fr_taylor", text: "let me know the dates whenever you land on something", createdAt: ago(50) },
 
     // Group thread — the setup for the "plan this trip" CTA
-    { id: nanoid(8), threadId: "th_squad", senderId: "fr_priya", text: "ok this group needs a summer trip. non-negotiable", createdAt: ago(300) },
-    { id: nanoid(8), threadId: "th_squad", senderId: "fr_sam", text: "yes. somewhere warm, somewhere with good food, that's the whole brief", createdAt: ago(295) },
-    { id: nanoid(8), threadId: "th_squad", senderId: "fr_maya", text: "I have a spreadsheet started already don't @ me", createdAt: ago(280) },
-    { id: nanoid(8), threadId: "th_squad", senderId: "fr_priya", text: "someone just needs to make it official 👀", createdAt: ago(20) },
+    { id: nanoid(8), threadId: "th_squad", senderId: "fr_aishwarya", text: "ok this group needs a summer trip. non-negotiable", createdAt: ago(300) },
+    { id: nanoid(8), threadId: "th_squad", senderId: "fr_taylor", text: "yes. somewhere warm, somewhere with good food, that's the whole brief", createdAt: ago(295) },
+    { id: nanoid(8), threadId: "th_squad", senderId: "fr_adam", text: "as long as there's one actual hike in there I'm happy", createdAt: ago(290) },
+    { id: nanoid(8), threadId: "th_squad", senderId: "fr_sanidhya", text: "budget check: I can do ~€1,200 all in if we book flights this month", createdAt: ago(270) },
+    { id: nanoid(8), threadId: "th_squad", senderId: "fr_aishwarya", text: "I have a spreadsheet started already don't @ me", createdAt: ago(268) },
+    { id: nanoid(8), threadId: "th_squad", senderId: "me", text: "ok I'll set up a proper plan tonight and get everyone's dates in", createdAt: ago(120) },
+    { id: nanoid(8), threadId: "th_squad", senderId: "fr_adam", text: "legend. no red-eyes though, I mean it", createdAt: ago(60) },
+    { id: nanoid(8), threadId: "th_squad", senderId: "fr_aishwarya", text: "someone just needs to make it official 👀", createdAt: ago(20) },
   ];
 
   return { friends: FRIENDS, threads, messages };
@@ -83,37 +83,37 @@ export function pickReply(hasLinkedTrip: boolean): string {
  */
 export const FRIENDS_BY_DESTINATION: Record<string, { friendId: string; note: string }[]> = {
   lisbon: [
-    { friendId: "fr_maya", note: "Lives here" },
-    { friendId: "fr_ruby", note: "Has a work trip that same week" },
+    { friendId: "fr_sanidhya", note: "Lives here" },
+    { friendId: "fr_adam", note: "Has a work trip that same week" },
   ],
   tokyo: [
-    { friendId: "fr_kenji", note: "An hour away in Osaka" },
-    { friendId: "fr_noor", note: "Chasing the same dates" },
+    { friendId: "fr_adam", note: "Chasing the same dates" },
+    { friendId: "fr_taylor", note: "Transiting through on the way back" },
   ],
   "mexico-city": [
-    { friendId: "fr_sam", note: "Visiting family that month" },
+    { friendId: "fr_taylor", note: "Visiting family that month" },
   ],
   barcelona: [
-    { friendId: "fr_jules", note: "Short flight from Paris" },
-    { friendId: "fr_leo", note: "Road-tripping through Spain" },
+    { friendId: "fr_aishwarya", note: "Short flight in for the weekend" },
+    { friendId: "fr_sanidhya", note: "Road-tripping through Spain" },
   ],
   reykjavik: [
-    { friendId: "fr_priya", note: "Chasing the northern lights too" },
+    { friendId: "fr_aishwarya", note: "Chasing the northern lights too" },
   ],
   bali: [
-    { friendId: "fr_noor", note: "Extending a dive trip" },
+    { friendId: "fr_taylor", note: "Extending a dive trip" },
   ],
   marrakech: [
-    { friendId: "fr_ruby", note: "Has family nearby" },
+    { friendId: "fr_adam", note: "Has family nearby" },
   ],
   "new-york": [
-    { friendId: "fr_sam", note: "Close enough to fly in" },
-    { friendId: "fr_priya", note: "There for a conference that week" },
+    { friendId: "fr_taylor", note: "Close enough to fly in" },
+    { friendId: "fr_aishwarya", note: "There for a conference that week" },
   ],
   banff: [
-    { friendId: "fr_leo", note: "Never misses a mountain trip" },
+    { friendId: "fr_adam", note: "Never misses a mountain trip" },
   ],
   kyoto: [
-    { friendId: "fr_kenji", note: "Lives an hour away" },
+    { friendId: "fr_sanidhya", note: "Been talking about this one for years" },
   ],
 };

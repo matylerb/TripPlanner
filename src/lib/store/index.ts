@@ -29,7 +29,7 @@ export interface StoreState {
 
   hydrate(): void;
   setMe(name: string, color?: string): Identity;
-  createTrip(name: string, organizerName: string, color?: string): string;
+  createTrip(name: string, organizerName: string, color?: string, friendNames?: string[]): string;
   joinTrip(tripId: string, name: string, color?: string): boolean;
   isMember(tripId: string): boolean;
 
@@ -140,13 +140,25 @@ export const useStore = create<StoreState>()((set, get) => {
       return me;
     },
 
-    createTrip(name, organizerName, color) {
+    createTrip(name, organizerName, color, friendNames) {
       const me = get().setMe(organizerName, color);
       const id = nanoid(8);
       const now = new Date().toISOString();
+      const members: TripState["members"] = [
+        { id: me.id, tripId: id, displayName: me.name, color: me.color, committed: false, isOrganizer: true, joinedAt: now },
+      ];
+      const taken = new Set(members.map((m) => m.color));
+      for (const friendName of friendNames ?? []) {
+        if (members.length >= 8) break;
+        const trimmed = friendName.trim();
+        if (!trimmed || members.some((m) => m.displayName.toLowerCase() === trimmed.toLowerCase())) continue;
+        const c = MEMBER_COLORS.find((x) => !taken.has(x)) ?? MEMBER_COLORS[members.length % MEMBER_COLORS.length];
+        taken.add(c);
+        members.push({ id: nanoid(10), tripId: id, displayName: trimmed, color: c, committed: false, isOrganizer: false, joinedAt: now });
+      }
       const state: TripState = {
         trip: { id, name: name.trim() || "Untitled trip", status: "gathering", createdBy: me.id, createdAt: now, bookingSearchState: "idle" },
-        members: [{ id: me.id, tripId: id, displayName: me.name, color: me.color, committed: false, isOrganizer: true, joinedAt: now }],
+        members,
         inputs: [],
         messages: [
           {
@@ -160,7 +172,7 @@ export const useStore = create<StoreState>()((set, get) => {
         ],
         days: [],
         items: [],
-        budget: computeBudget([], 1),
+        budget: computeBudget([], members.length),
         bookings: [],
         version: 1,
       };

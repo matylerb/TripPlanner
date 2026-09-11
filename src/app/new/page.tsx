@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ColorPicker } from "@/components/color-picker";
 import { Avatar, Button, Logo, ThemeToggle } from "@/components/ui";
-import { MEMBER_COLORS } from "@/lib/format";
+import { DEMO_NAMES, MEMBER_COLORS } from "@/lib/format";
 import { useStore } from "@/lib/store";
 
 const SUGGESTIONS = ["Spring break, finally", "The big 30", "Bachelor(ette) weekend", "Family summer", "Mates' trip"];
@@ -20,16 +20,26 @@ export default function NewTrip() {
   const [name, setName] = useState("");
   const [whoInput, setWho] = useState<string | null>(null);
   const [colorInput, setColor] = useState<string | null>(null);
+  const [friendSet, setFriendSet] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const who = whoInput ?? me?.name ?? "";
   const color = colorInput ?? me?.color ?? MEMBER_COLORS[0];
+
+  const toggleFriend = (n: string) =>
+    setFriendSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(n)) next.delete(n);
+      else next.add(n);
+      return next;
+    });
 
   const canGo = name.trim().length > 1 && who.trim().length > 0;
 
   const go = () => {
     if (!canGo) return;
     setBusy(true);
-    const id = createTrip(name, who, color);
+    const friends = [...friendSet].filter((f) => f.toLowerCase() !== who.trim().toLowerCase());
+    const id = createTrip(name, who, color, friends);
     router.push(`/trip/${id}/input`);
   };
 
@@ -80,10 +90,27 @@ export default function NewTrip() {
             <div className="grid sm:grid-cols-[1fr_auto] gap-5 items-end">
               <label className="block">
                 <span className="text-sm font-medium">Your name</span>
-                <input value={who} onChange={(e) => setWho(e.target.value)} placeholder="What the group calls you" className="field mt-2" maxLength={24} />
-              </label>
-              <Avatar name={who || "?"} color={color} size={46} />
+              <input value={who} onChange={(e) => setWho(e.target.value)} placeholder="What the group calls you" className="field mt-2" maxLength={24} />
+            </label>
+            <Avatar name={who || "?"} color={color} size={46} />
+          </div>
+          <div>
+            <span className="text-sm font-medium">Add friends</span>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {DEMO_NAMES.map((n) => (
+                <button
+                  type="button"
+                  key={n}
+                  onClick={() => toggleFriend(n)}
+                  data-on={friendSet.has(n) ? "true" : undefined}
+                  aria-pressed={friendSet.has(n)}
+                  className="chip"
+                >
+                  {n}
+                </button>
+              ))}
             </div>
+          </div>
             <div>
               <span className="text-sm font-medium">Your colour</span>
               <div className="mt-2.5">
