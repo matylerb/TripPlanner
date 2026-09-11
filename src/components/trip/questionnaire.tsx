@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Check, Shuffle } from "lucide-react";
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
+import { mergePrefs } from "@/lib/ai";
 import { DESTINATIONS, INTEREST_OPTIONS, ORIGINS } from "@/lib/ai/destinations";
 import { useStore } from "@/lib/store";
 import type { Pace, StructuredPrefs, TripState } from "@/lib/types";
@@ -16,7 +17,8 @@ export function Questionnaire({ state, onDone }: { state: TripState; onDone?: ()
 
   const [destination, setDestination] = useState<string>("");
   const [surprise, setSurprise] = useState(false);
-  const [origin, setOrigin] = useState("nyc");
+  // Default to whatever the group has already said about where they're flying from.
+  const [origin, setOrigin] = useState(() => mergePrefs(state.inputs).origin);
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [flexible, setFlexible] = useState(true);

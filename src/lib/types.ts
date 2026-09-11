@@ -158,7 +158,7 @@ export interface Trip {
   draftedAt?: string;
   committedAt?: string;
   bookedAt?: string;
-  bookingSearchState?: "idle" | "searching" | "done";
+  bookingSearchState?: "idle" | "searching" | "done" | "failed";
 }
 
 export interface TripState {

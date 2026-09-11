@@ -43,6 +43,9 @@ export default function CommitPage() {
     try {
       const options = await ai.searchBookings(state.trip, state.items, state.members.length, (m) => setAiBusy(tripId, m));
       setBookings(tripId, options);
+    } catch (err) {
+      console.error("[bookings] search failed", err);
+      setBookingSearch(tripId, "failed");
     } finally {
       setAiBusy(tripId, null);
     }

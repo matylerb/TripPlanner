@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TripSync
 
-## Getting Started
+A group plans a trip together through chat or a short questionnaire. The planner turns everyone's input into a day-by-day itinerary and a per-person budget. The group edits it live, votes, and comments. Nothing is searched or booked until every member commits. After the lock, the app finds ranked flights, stays, and tickets with pre-filled provider links, and lays the whole trip out on a map.
 
-First, run the development server:
+Built from `Plan.md`. **Runs with zero configuration** — no API keys, no accounts, no database.
+
+## Run it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000, start a trip, then **copy the invite link and open it in a second tab**. Each tab is its own person (identity lives in `sessionStorage`), so you can watch chat, edits, votes, presence, and the budget sync live between tabs.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it works without keys
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Plan.md said      | This MVP uses                                                                                                       | Swap to the real thing                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Supabase Realtime | `localStorage` + `BroadcastChannel` (`src/lib/store/sync.ts`). Version-checked merges, presence heartbeats.        | Replace `sync.ts` with a Supabase Realtime adapter; the store API in `store/index.ts` stays. |
+| Gemini            | A heuristic planner over a curated dataset of 11 destinations (`src/lib/ai/mock.ts`, `destinations.ts`).           | Set `GEMINI_API_KEY`. `/api/ai` already routes chat parsing to Gemini and falls back to the local planner on any failure. Wire draft + booking prompts in `src/app/api/ai/route.ts`. |
+| Google Maps       | Leaflet + OpenStreetMap tiles with great-circle flight arcs, per-day routes, numbered pins (`components/trip/map-view.tsx`). | Set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and replace `MapView`; `buildMapData()` already produces the pins/routes/arcs. |
+| Booking APIs      | Ranked options with real deep links: Google Flights, Booking.com, Hotels.com, GetYourGuide, Viator, Airbnb.        | Replace `searchBookingsMock`. The `BookingOption` shape and the select → confirm flow stay. |
 
-## Learn More
+Copy `.env.example` to `.env.local` when you have keys. Everything in it is optional.
 
-To learn more about Next.js, take a look at the following resources:
+## Screens
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Landing** `/` — start a trip, or pick up a recent one.
+2. **Brief** `/trip/:id/input` — group chat and questionnaire side by side; both write to the same structured brief. Generate Draft lives here.
+3. **Plan** `/trip/:id/plan` — the collaborative editor. Inline title/cost edits, drag to reorder, 👍/👎 votes, comments, budget recomputed on every change.
+4. **Commit** `/trip/:id/commit` — each member toggles "I'm in"; the organiser locks at full agreement (or at quorum with a warning).
+5. **Book** `/trip/:id/bookings` — ranked options per itinerary line, grouped by flights / stays / tickets. Select, open, mark booked.
+6. **Map** `/trip/:id/map` — whole trip or per day. Flights as arcs, stops as a numbered route, the stay as a pin.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Opinions baked in
 
-## Deploy on Vercel
+- The draft is built to the **lowest** stated budget in the group, not the average.
+- Every tab is a member; joining is just a name and a colour. Max 8 per trip.
+- No payments. "Open" goes to a pre-filled search at the provider; a human pays there.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 16 (App Router) · React 19 · Tailwind v4 · Framer Motion · Zustand · Leaflet · TypeScript
+
+```
+src/
+  app/               routes (landing, new, join, trip/[id]/{input,plan,commit,bookings,map}, api/ai)
+  components/        ui primitives, landing, trip/* (shell, chat, questionnaire, brief, itinerary, budget, map)
+  lib/
+    types.ts         data model (mirrors Plan.md)
+    store/           zustand store + local persistence + cross-tab sync
+    ai/              provider interface, local planner, destination dataset
+    budget.ts        pure budget recompute
+    geo.ts           haversine, great-circle arcs
+```
+
+## Scripts
+
+```bash
+npm run dev     # dev server
+npm run build   # production build
+npm run lint    # eslint
+```
+
+## Known limits (MVP)
+
+- Trips live in one browser. Cross-device sharing needs the Supabase adapter.
+- Concurrent edits from two tabs in the same instant are last-write-wins.
+- The local planner knows 11 destinations. Ask for one it doesn't know and it picks the closest fit and tells you the runner-up.

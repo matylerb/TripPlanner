@@ -286,7 +286,7 @@ body {
 .leaflet-tile-pane {
   filter: saturate(0.55) contrast(0.95) brightness(1.02);
 }
-.map-dark .leaflet-tile-pane {
+.dark .leaflet-tile-pane {
   filter: invert(1) hue-rotate(190deg) brightness(0.78) contrast(0.9) saturate(0.35);
 }
 .leaflet-control-attribution {

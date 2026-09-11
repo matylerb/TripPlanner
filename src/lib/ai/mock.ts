@@ -207,14 +207,15 @@ export function aiReplyFor(prefs: StructuredPrefs, name: string): string {
     return `Got it, ${name}. I'll keep that in mind. Tell me about budget, timing, or what kind of place you're picturing and I'll fold it in.`;
   }
   const openers = ["Got it", "Noted", "Logged", "Perfect", "On it"];
-  const o = openers[Math.abs(hash(name + bits.join())) % openers.length];
+  const o = openers[hash(name + bits.join()) % openers.length];
   return `${o} — ${bits.join(", ")}. Added to the group's preferences.`;
 }
 
+/** Deterministic non-negative string hash (safe to use for array indexing). */
 function hash(s: string) {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return h;
+  return Math.abs(h);
 }
 
 /* ------------------------------------------------------------------ */
@@ -252,6 +253,7 @@ export function mergePrefs(inputs: PreferenceInput[]): MergedPrefs {
     dealBreakers: [],
   };
   const budgets: number[] = [];
+  const originVotes: Record<string, number> = {};
   const paces: Pace[] = [];
   const nightsArr: number[] = [];
   const climates: string[] = [];
@@ -260,7 +262,7 @@ export function mergePrefs(inputs: PreferenceInput[]): MergedPrefs {
     if (!p) continue;
     if (p.destination) m.destinationVotes[p.destination] = (m.destinationVotes[p.destination] ?? 0) + 1;
     if (p.surpriseMe) m.surpriseMe = true;
-    if (p.origin) m.origin = p.origin;
+    if (p.origin) originVotes[p.origin] = (originVotes[p.origin] ?? 0) + 1;
     if (p.month) m.month = p.month;
     if (p.startDate && p.endDate) {
       m.startDate = p.startDate;
@@ -276,6 +278,9 @@ export function mergePrefs(inputs: PreferenceInput[]): MergedPrefs {
     p.mustHaves?.forEach((x) => !m.mustHaves.includes(x) && m.mustHaves.push(x));
     p.dealBreakers?.forEach((x) => !m.dealBreakers.includes(x) && m.dealBreakers.push(x));
   }
+  // most-mentioned origin wins; ties go to whoever said it first
+  const topOrigin = Object.entries(originVotes).sort((a, b) => b[1] - a[1])[0];
+  if (topOrigin) m.origin = topOrigin[0];
   if (budgets.length) {
     // the group budget is the lowest stated budget — nobody gets priced out
     m.budgetPerPerson = Math.min(...budgets);
