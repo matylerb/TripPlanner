@@ -1,0 +1,344 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: var(--font-fraunces), "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-paper: #f6f1e9;
+  --color-paper-2: #efe8dc;
+  --color-paper-3: #e6ddcd;
+  --color-ink: #14120f;
+  --color-ink-2: #3a352e;
+  --color-ink-3: #6b6459;
+  --color-ink-4: #a49c8f;
+  --color-line: #d9d0c2;
+
+  --color-sienna: #d4562e;
+  --color-sienna-2: #b8451f;
+  --color-sienna-soft: #f5dccf;
+  --color-sage: #6f8f6a;
+  --color-sage-soft: #dfe8d9;
+  --color-sky: #4d7ea8;
+  --color-sky-soft: #d6e3ee;
+  --color-gold: #c9962b;
+  --color-gold-soft: #f2e5c4;
+  --color-plum: #7a4b7b;
+  --color-plum-soft: #e7d8e7;
+
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:root {
+  --bg: var(--color-paper);
+  --bg-2: var(--color-paper-2);
+  --bg-3: var(--color-paper-3);
+  --fg: var(--color-ink);
+  --fg-2: var(--color-ink-2);
+  --fg-3: var(--color-ink-3);
+  --fg-4: var(--color-ink-4);
+  --line: var(--color-line);
+  --card: #fbf8f3;
+  --accent: var(--color-sienna);
+  --accent-2: var(--color-sienna-2);
+  --accent-soft: var(--color-sienna-soft);
+  --shadow: 0 1px 2px rgba(20, 18, 15, 0.04), 0 12px 40px -12px rgba(20, 18, 15, 0.18);
+  --shadow-lg: 0 2px 4px rgba(20, 18, 15, 0.05), 0 30px 80px -20px rgba(20, 18, 15, 0.3);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0f0e0c;
+  --bg-2: #171512;
+  --bg-3: #1f1c18;
+  --fg: #f3ede3;
+  --fg-2: #cfc6b8;
+  --fg-3: #978e80;
+  --fg-4: #5f574c;
+  --line: #2b2721;
+  --card: #15130f;
+  --accent: #e8683f;
+  --accent-2: #f0825f;
+  --accent-soft: #3a1f15;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 40px -12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.4), 0 30px 80px -20px rgba(0, 0, 0, 0.8);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-fg-4: var(--fg-4);
+  --color-line-c: var(--line);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
+  --shadow-soft: var(--shadow);
+  --shadow-deep: var(--shadow-lg);
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11", "liga";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Paper grain */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.dark .grain::before {
+  opacity: 0.08;
+  mix-blend-mode: screen;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1;
+  letter-spacing: -0.02em;
+}
+.font-display-tight {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144, "SOFT" 50, "WONK" 0;
+  letter-spacing: -0.035em;
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+.eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--fg-3);
+}
+
+.hairline {
+  border: 1px solid var(--line);
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+
+/* Inputs */
+.field {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 0.875rem;
+  padding: 0.8rem 1rem;
+  color: var(--fg);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.field::placeholder {
+  color: var(--fg-4);
+}
+.field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+  background: var(--card);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  font-size: 0.8125rem;
+  color: var(--fg-2);
+  transition: all 0.18s var(--ease-out-expo);
+  cursor: pointer;
+  user-select: none;
+}
+.chip:hover {
+  border-color: var(--fg-4);
+  transform: translateY(-1px);
+}
+.chip[data-on="true"] {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+/* Keyframes */
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+.shimmer {
+  background: linear-gradient(90deg, var(--bg-2) 25%, var(--bg-3) 50%, var(--bg-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid var(--accent);
+  animation: pulse-ring 1.8s var(--ease-out-expo) infinite;
+}
+
+/* Leaflet overrides */
+.leaflet-container {
+  background: var(--bg-2);
+  font-family: var(--font-sans);
+}
+.leaflet-tile-pane {
+  filter: saturate(0.55) contrast(0.95) brightness(1.02);
+}
+.map-dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(190deg) brightness(0.78) contrast(0.9) saturate(0.35);
+}
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--card) 80%, transparent) !important;
+  color: var(--fg-3) !important;
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a {
+  color: var(--fg-2) !important;
+}
+.leaflet-control-zoom a {
+  background: var(--card) !important;
+  color: var(--fg) !important;
+  border-color: var(--line) !important;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--card) !important;
+  color: var(--fg) !important;
+  box-shadow: var(--shadow) !important;
+  border-radius: 12px !important;
+}
+.pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  border: 2px solid var(--bg);
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.45);
+}
+.pin[data-kind="lodging"] {
+  background: var(--accent);
+  color: #fff;
+}
+.pin[data-kind="airport"] {
+  background: var(--color-sky);
+  color: #fff;
+  width: 26px;
+  height: 26px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
