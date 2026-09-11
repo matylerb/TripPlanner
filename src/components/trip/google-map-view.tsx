@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { buildMapData } from "@/components/trip/map-data";
 import { greatCircle, type LatLng } from "@/lib/geo";
 import type { TripState } from "@/lib/types";
+import { createCrimeHeatmap } from "@/lib/crime-heatmap";
+import { crimeBand, crimeCityAt } from "@/lib/crime-data";
 
 const GOOGLE_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -14,7 +16,9 @@ type GoogleMapsApi = {
     Map: new (element: HTMLElement, options: Record<string, unknown>) => GoogleMapInstance;
     Marker: new (options: Record<string, unknown>) => Overlay & { addListener?: (event: string, callback: () => void) => void };
     Polyline: new (options: Record<string, unknown>) => Overlay;
-    InfoWindow: new (options: Record<string, unknown>) => { open: (options: Record<string, unknown>) => void };
+    GroundOverlay: new (url: string, bounds: { north: number; south: number; east: number; west: number }, options: Record<string, unknown>) => Overlay & { addListener: (event: string, callback: (event: { latLng?: { lat: () => number; lng: () => number } }) => void) => { remove: () => void } };
+    Circle: new (options: Record<string, unknown>) => Overlay & { addListener: (event: string, callback: () => void) => { remove: () => void } };
+    InfoWindow: new (options: Record<string, unknown>) => { open: (options: Record<string, unknown>) => void; close: () => void };
     LatLngBounds: new () => { extend: (point: { lat: number; lng: number }) => void };
   };
 };
@@ -46,10 +50,12 @@ export default function GoogleMapView({ state, selectedDay, focusId }: { state: 
   const overlaysRef = useRef<Overlay[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [showCrime, setShowCrime] = useState(false);
+  const crimeCity = crimeCityAt(state.trip.destination);
   const { points, dayRoutes, flights } = useMemo(() => buildMapData(state), [state]);
-  const visiblePoints = selectedDay ? points.filter((point) => point.dayNumber === selectedDay) : points;
-  const visibleRoutes = selectedDay ? dayRoutes.filter((route) => route.dayNumber === selectedDay) : dayRoutes;
-  const visibleFlights = selectedDay ? flights.filter((flight) => flight.dayNumber === selectedDay) : flights;
+  const visiblePoints = useMemo(() => selectedDay ? points.filter((point) => point.dayNumber === selectedDay) : points, [points, selectedDay]);
+  const visibleRoutes = useMemo(() => selectedDay ? dayRoutes.filter((route) => route.dayNumber === selectedDay) : dayRoutes, [dayRoutes, selectedDay]);
+  const visibleFlights = useMemo(() => selectedDay ? flights.filter((flight) => flight.dayNumber === selectedDay) : flights, [flights, selectedDay]);
 
   useEffect(() => {
     if (!GOOGLE_MAPS_KEY) return;
@@ -87,9 +93,64 @@ export default function GoogleMapView({ state, selectedDay, focusId }: { state: 
     if (visiblePoints.length || visibleFlights.length) map.fitBounds(bounds, 60);
   }, [focusId, mapReady, points, visibleFlights, visiblePoints, visibleRoutes]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    const api = window.google;
+    if (!mapReady || !map || !api || !showCrime || !crimeCity) return;
+    const heatmap = createCrimeHeatmap(crimeCity);
+    const surface = new api.maps.GroundOverlay(heatmap.url, heatmap.bounds, { clickable: true, opacity: 0.7 });
+    surface.setMap(map);
+    const windows: { close: () => void }[] = [];
+    const listener = surface.addListener("click", (event) => {
+      if (!event.latLng) return;
+      const lat = event.latLng.lat(), lng = event.latLng.lng();
+      const area = crimeCity.areas.reduce((nearest, candidate) => {
+        const distance = (a: typeof candidate) => (a.lat - lat) ** 2 + ((a.lng - lng) * Math.cos(lat * Math.PI / 180)) ** 2;
+        return distance(candidate) < distance(nearest) ? candidate : nearest;
+      });
+      const band = crimeBand(crimeCity, area);
+      const center = { lat: area.lat, lng: area.lng };
+      windows.forEach((popup) => popup.close());
+      windows.length = 0;
+      const info = new api.maps.InfoWindow({ position: center, content:
+        `<div style="color:#18181b;padding:4px;max-width:240px"><strong>${escapeHtml(area.name)}</strong><br>${area.count.toLocaleString("en-US")} reported offences · ${crimeCity.year}<br>${band.label} total within ${crimeCity.name}<br><small>Whole-area total. Approximate center, not a street-level safety rating.</small></div>` });
+      windows.push(info);
+      info.open({ map });
+    });
+    return () => {
+      listener.remove();
+      windows.forEach((popup) => popup.close());
+      surface.setMap(null);
+    };
+  }, [crimeCity, mapReady, showCrime]);
+
   if (!GOOGLE_MAPS_KEY) return <div className="h-full w-full grid place-items-center bg-bg-2 p-6 text-center text-sm text-fg-2">Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to .env.local to use Google Maps.</div>;
   if (error) return <div className="h-full w-full grid place-items-center bg-bg-2 p-6 text-center text-sm text-fg-2">{error}</div>;
-  return <div ref={elementRef} className="h-full w-full bg-bg-2" aria-label="Google Maps trip map" />;
+  return <>
+    <div ref={elementRef} className="h-full w-full bg-bg-2" aria-label="Google Maps trip map" />
+    <div className="absolute left-3 top-3 z-10 max-w-[min(320px,calc(100%-24px))] rounded-2xl border border-line-c bg-bg p-3 shadow-lg text-fg">
+      <button type="button" aria-pressed={showCrime && !!crimeCity} disabled={!crimeCity}
+        onClick={() => setShowCrime((value) => !value)}
+        className="flex w-full items-center justify-between gap-4 text-sm font-semibold disabled:opacity-60">
+        Crime heatmap
+        <span className={showCrime && crimeCity ? "rounded-full bg-accent px-2 py-1 text-white" : "rounded-full bg-bg-2 px-2 py-1"}>{showCrime && crimeCity ? "On" : "Off"}</span>
+      </button>
+      {!crimeCity && <p className="mt-1 text-xs text-fg-3">Available for London and Tokyo’s 23 wards.</p>}
+      {crimeCity && showCrime && <div className="mt-2 space-y-2 text-xs">
+        <p>{crimeCity.name} · {crimeCity.year} reported crime totals</p>
+        <div className="h-2 rounded-full" style={{ background: "linear-gradient(to right, #22c55e, #f59e0b, #ef4444)" }} />
+        <div className="flex justify-between gap-3" aria-label="Lower, middle and higher reported offence totals">
+          {[['Lower', '#22c55e'], ['Middle', '#f59e0b'], ['Higher', '#ef4444']].map(([label, color]) => <span key={label} className="flex items-center gap-1"><span className="size-2.5 rounded-full" style={{ background: color }} />{label}</span>)}
+        </div>
+        <p className="text-fg-3">Smoothed estimates between borough/ward centers, not street-level observations or boundaries. Tap near a center for its reported total.</p>
+        <details>
+          <summary className="cursor-pointer underline">About these statistics</summary>
+          <p className="mt-1 text-fg-3">Historical borough/ward totals, not population-adjusted. Colors rank totals within each city; population, visitors and reporting affect counts. Not a personal safety score or a comparison between cities. {crimeCity.name === "London" ? "City of London is excluded." : "Coverage excludes the rest of Tokyo Metropolis."}</p>
+          <a className="mt-1 inline-block underline" href={crimeCity.source} target="_blank" rel="noreferrer">Official source</a>
+        </details>
+      </div>}
+    </div>
+  </>;
 }
 
 function escapeHtml(value: string) { return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character] ?? character); }
