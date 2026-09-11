@@ -4,7 +4,6 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Fragment, useEffect, useMemo } from "react";
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
-import { useTheme } from "@/components/providers";
 import { greatCircle, jitter, type LatLng } from "@/lib/geo";
 import { sortedItems } from "@/lib/store";
 import type { TripState } from "@/lib/types";
@@ -66,7 +65,6 @@ function FitBounds({ bounds }: { bounds: LatLng[] }) {
 }
 
 export default function MapView({ state, selectedDay, focusId }: { state: TripState; selectedDay: number | null; focusId?: string | null }) {
-  const { dark } = useTheme();
   const { points, dayRoutes, flights } = useMemo(() => buildMapData(state), [state]);
 
   const visiblePoints = selectedDay ? points.filter((p) => p.dayNumber === selectedDay) : points;
@@ -85,11 +83,11 @@ export default function MapView({ state, selectedDay, focusId }: { state: TripSt
   }, [selectedDay, focusId, state.trip.id, points.length]);
 
   const center: LatLng = [state.trip.destination?.lat ?? 20, state.trip.destination?.lng ?? 0];
-  // OpenStreetMap standard tiles need no API key. Dark mode is a CSS filter on the tile pane (see globals.css).
+  // OpenStreetMap standard tiles need no API key. Dark mode is a CSS filter on the tile pane (.dark .leaflet-tile-pane in globals.css).
   const tiles = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
   return (
-    <MapContainer center={center} zoom={11} scrollWheelZoom className={`h-full w-full ${dark ? "map-dark" : ""}`} zoomControl={false} attributionControl>
+    <MapContainer center={center} zoom={11} scrollWheelZoom className="h-full w-full" zoomControl={false} attributionControl>
       <TileLayer url={tiles} attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' />
       <FitBounds bounds={bounds} />
 

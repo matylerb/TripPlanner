@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Check, Lock, PartyPopper, Search, Star } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { CountUp } from "@/components/count-up";
 import { ItemIcon } from "@/components/trip/item-icon";
 import { Button, ButtonLink, Empty, Pill, cn } from "@/components/ui";
@@ -25,17 +25,32 @@ export default function BookingsPage() {
   const committed = state?.trip.status === "committed" || state?.trip.status === "booked";
   const searching = state?.trip.bookingSearchState === "searching";
 
-  // Resilience: if a trip is committed but nobody ran the search (e.g. reload mid-search), run it here.
-  useEffect(() => {
-    if (!state || !committed) return;
-    if (state.trip.bookingSearchState === "idle" && state.bookings.length === 0) {
-      setBookingSearch(tripId, "searching");
-      ai.searchBookings(state.trip, state.items, state.members.length, (m) => setAiBusy(tripId, m))
-        .then((o) => setBookings(tripId, o))
-        .finally(() => setAiBusy(tripId, null));
+  const runSearch = useCallback(async () => {
+    const s = useStore.getState().trips[tripId];
+    if (!s) return;
+    setBookingSearch(tripId, "searching");
+    try {
+      const o = await ai.searchBookings(s.trip, s.items, s.members.length, (m) => setAiBusy(tripId, m));
+      setBookings(tripId, o);
+    } catch (err) {
+      console.error("[bookings] search failed", err);
+      setBookingSearch(tripId, "failed");
+    } finally {
+      setAiBusy(tripId, null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state?.trip.bookingSearchState, committed]);
+  }, [tripId, setBookingSearch, setBookings, setAiBusy]);
+
+  // Resilience: if a trip is committed but nobody ran the search (e.g. reload mid-search), run it once here.
+  const autoRan = useRef(false);
+  useEffect(() => {
+    if (!state || !committed || autoRan.current) return;
+    if (state.trip.bookingSearchState === "idle" && state.bookings.length === 0) {
+      autoRan.current = true;
+      runSearch();
+    }
+  }, [state, committed, runSearch]);
+
+  const failed = !!state && committed && state.trip.bookingSearchState === "failed";
 
   const groups = useMemo(() => {
     if (!state) return [];
@@ -84,8 +99,13 @@ export default function BookingsPage() {
                 <Search className="size-6" />
               </span>
             </div>
-            <div className="mt-6 font-display text-2xl">Searching…</div>
-            <p className="mt-1 text-sm text-fg-3 font-mono min-h-[1.5em]">{busy ?? "Reading the committed plan"}</p>
+            <div className="mt-6 font-display text-2xl">{failed ? "Search didn't finish" : "Searching…"}</div>
+            <p className="mt-1 text-sm text-fg-3 font-mono min-h-[1.5em]">{busy ?? (failed ? "Something went wrong on the way." : "Reading the committed plan")}</p>
+            {failed && (
+              <Button className="mt-5" onClick={runSearch}>
+                <Search className="size-4" /> Search again
+              </Button>
+            )}
             <div className="mt-6 w-full max-w-md space-y-2">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="h-12 rounded-xl shimmer" />
