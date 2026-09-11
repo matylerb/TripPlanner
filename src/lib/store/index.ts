@@ -148,13 +148,15 @@ export const useStore = create<StoreState>()((set, get) => {
         { id: me.id, tripId: id, displayName: me.name, color: me.color, committed: false, isOrganizer: true, joinedAt: now },
       ];
       const taken = new Set(members.map((m) => m.color));
+      const precommitMessages: TripState["messages"] = [];
       for (const friendName of friendNames ?? []) {
         if (members.length >= 8) break;
         const trimmed = friendName.trim();
         if (!trimmed || members.some((m) => m.displayName.toLowerCase() === trimmed.toLowerCase())) continue;
         const c = MEMBER_COLORS.find((x) => !taken.has(x)) ?? MEMBER_COLORS[members.length % MEMBER_COLORS.length];
         taken.add(c);
-        members.push({ id: nanoid(10), tripId: id, displayName: trimmed, color: c, committed: false, isOrganizer: false, joinedAt: now });
+        members.push({ id: nanoid(10), tripId: id, displayName: trimmed, color: c, committed: true, isOrganizer: false, joinedAt: now });
+        precommitMessages.push({ id: nanoid(8), tripId: id, memberId: "system", kind: "system", text: `${trimmed} is in ✓`, createdAt: now });
       }
       const state: TripState = {
         trip: { id, name: name.trim() || "Untitled trip", status: "gathering", createdBy: me.id, createdAt: now, bookingSearchState: "idle" },
@@ -169,6 +171,7 @@ export const useStore = create<StoreState>()((set, get) => {
             text: `Welcome to ${name.trim() || "the trip"}. Tell me what you're hoping for — where, when, how much, what kind of days — and I'll turn everyone's answers into a first draft.`,
             createdAt: now,
           },
+          ...precommitMessages,
         ],
         days: [],
         items: [],
