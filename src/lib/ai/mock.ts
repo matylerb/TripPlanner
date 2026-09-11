@@ -61,8 +61,8 @@ function detectTags(text: string): Tag[] {
 function detectBudget(text: string): number | undefined {
   const t = text.toLowerCase().replace(/,/g, "");
   const m =
-    t.match(/\$\s?(\d{3,5})(?:\s?(?:k))?/) ||
-    t.match(/(\d{3,5})\s?(?:dollars|usd|bucks)/) ||
+    t.match(/[$€]\s?(\d{3,5})(?:\s?(?:k))?/) ||
+    t.match(/(\d{3,5})\s?(?:€|euros?|eur|dollars|usd|bucks)/) ||
     t.match(/budget[^0-9]{0,20}(\d{3,5})/) ||
     t.match(/(\d)(?:\.\d)?k\b/);
   if (!m) return undefined;
@@ -198,7 +198,7 @@ export function aiReplyFor(prefs: StructuredPrefs, name: string): string {
   if (prefs.month) bits.push(`in ${prefs.month[0].toUpperCase() + prefs.month.slice(1)}`);
   if (prefs.startDate && prefs.endDate) bits.push(`${prefs.startDate} → ${prefs.endDate}`);
   if (prefs.nights) bits.push(`about ${prefs.nights} nights`);
-  if (prefs.budgetPerPerson) bits.push(`~$${prefs.budgetPerPerson.toLocaleString()} per person`);
+  if (prefs.budgetPerPerson) bits.push(`~€${prefs.budgetPerPerson.toLocaleString()} per person`);
   if (prefs.interests?.length) bits.push(`into ${prefs.interests.slice(0, 3).join(", ")}`);
   if (prefs.pace) bits.push(`${prefs.pace} pace`);
   if (prefs.dealBreakers?.length) bits.push(`noted: ${prefs.dealBreakers.join(", ").toLowerCase()}`);
@@ -528,7 +528,7 @@ export async function generateDraftMock(
   const summary = [
     `${dest.name}, ${dest.country}: ${dest.blurb}`,
     `${nights} nights based in ${dest.neighborhood}, ${m.pace} pace${interestsList.length ? `, leaning into ${interestsList.join(", ")}` : ""}.`,
-    m.budgetSet ? `Built to fit the group's tightest budget of $${m.budgetPerPerson.toLocaleString()} per person.` : "No budget was set, so this targets a mid-range spend.",
+    m.budgetSet ? `Built to fit the group's tightest budget of €${m.budgetPerPerson.toLocaleString()} per person.` : "No budget was set, so this targets a mid-range spend.",
     runnerUp ? `Runner-up was ${runnerUp.name}. Say the word and I'll redraft.` : "",
   ]
     .filter(Boolean)

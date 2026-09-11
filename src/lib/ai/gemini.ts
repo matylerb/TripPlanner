@@ -45,7 +45,7 @@ export function geminiConfigured() {
 export async function parseWithGemini(text: string, memberName: string): Promise<{ prefs: StructuredPrefs; reply: string }> {
   const prompt = `You extract travel preferences from one group-chat message into JSON.
 Message from ${memberName}: """${text}"""
-Only include keys the message actually supports. Keys: destination (string, a city/region), surpriseMe (bool), origin (one of ${Object.keys(ORIGINS).join(",")} if a matching home city is mentioned), month (lowercase english), startDate, endDate (YYYY-MM-DD), flexibleDates (bool), nights (int), budgetPerPerson (USD int, total per person for the whole trip), pace (slow|balanced|packed), interests (array from: food,beach,nature,culture,art,nightlife,adventure,history,wellness,romantic,luxury,budget,city), climate (warm|cold|mild), mustHaves (string[] short phrases), dealBreakers (string[] short phrases, e.g. "No early flights"), reply (one warm sentence, under 30 words, acknowledging exactly what you captured — never invent details).`;
+Only include keys the message actually supports. Keys: destination (string, a city/region), surpriseMe (bool), origin (one of ${Object.keys(ORIGINS).join(",")} if a matching home city is mentioned), month (lowercase english), startDate, endDate (YYYY-MM-DD), flexibleDates (bool), nights (int), budgetPerPerson (EUR int, total per person for the whole trip), pace (slow|balanced|packed), interests (array from: food,beach,nature,culture,art,nightlife,adventure,history,wellness,romantic,luxury,budget,city), climate (warm|cold|mild), mustHaves (string[] short phrases), dealBreakers (string[] short phrases, e.g. "No early flights"), reply (one warm sentence, under 30 words, acknowledging exactly what you captured — never invent details).`;
   const res = await getClient().models.generateContent({
     model: FLASH,
     contents: prompt,
@@ -143,7 +143,7 @@ const PLAN_SCHEMA = {
                 lng: { type: "number" },
                 startTime: { type: "string", description: "HH:MM 24h" },
                 duration: { type: "string", description: "e.g. '2h', '45m', '7h'" },
-                costPerPerson: { type: "number", description: "USD per person. Flights: cost of that one leg. Lodging: total for all nights, per person (share of a room)." },
+                costPerPerson: { type: "number", description: "EUR per person. Flights: cost of that one leg. Lodging: total for all nights, per person (share of a room)." },
                 nights: { type: "integer", description: "Lodging only: number of nights" },
               },
             },
@@ -178,7 +178,7 @@ MERGED BRIEF (already reconciled across everyone):
 - Destination votes: ${destVotes || "none — choose the best fit and name the runner-up in the summary"}${m.surpriseMe ? " (someone said 'surprise me')" : ""}
 - Flying from: ${origin.name} (${origin.airport}, lat ${origin.lat}, lng ${origin.lng})
 - Dates: ${m.startDate && m.endDate ? `${m.startDate} to ${m.endDate} (fixed)` : `${m.month ? `in ${m.month}, ` : ""}about ${m.nights} nights, flexible — pick a sensible window after today, ideally departing on a Thursday or Friday`}
-- Budget: ${m.budgetSet ? `$${m.budgetPerPerson} per person ALL-IN (this is the lowest number anyone said — nobody gets priced out; land under it)` : "not stated — aim mid-range, around $1,500 per person all-in"}
+- Budget: ${m.budgetSet ? `€${m.budgetPerPerson} per person ALL-IN (this is the lowest number anyone said — nobody gets priced out; land under it)` : "not stated — aim mid-range, around €1,500 per person all-in"}
 - Pace: ${m.pace} (${perDay} things per full day, plus meals)
 - Climate wish: ${m.climate ?? "no preference"}
 - Interests: ${interests || "none stated"}
@@ -193,7 +193,7 @@ RULES
 2. Day 1 = arrival: outbound flight (${origin.airport} → destination airport), an airport transit, ONE lodging item (check-in, with nights = total nights and costPerPerson = total lodging cost per person for the whole stay), then one evening item. Last day = departure: at most one short morning item, a transit to the airport, the return flight. Middle days: ${perDay} activities/meals spaced through the day, at least one meal per day.
 3. If "No early flights" is a deal-breaker, no departure before 10:00.
 4. Every non-flight item must be a real, specific, currently-operating place with a placeQuery that Google Maps can find. No generic "local restaurant". Include your best lat/lng.
-5. Costs are USD per person and realistic for the destination. HARD CAP: the sum of every costPerPerson (both flights + lodging + all activities, meals, transit) must be at most ${m.budgetSet ? Math.round(m.budgetPerPerson * 0.9) : 1350}. Add it up, write it in totalPerPerson, and if it is over, choose cheaper lodging and free/low-cost activities until it fits.
+5. Costs are EUR per person and realistic for the destination. HARD CAP: the sum of every costPerPerson (both flights + lodging + all activities, meals, transit) must be at most €${m.budgetSet ? Math.round(m.budgetPerPerson * 0.9) : 1350}. Add it up, write it in totalPerPerson, and if it is over, choose cheaper lodging and free/low-cost activities until it fits.
 6. Pure JSON matching the schema. No markdown.`;
 }
 
@@ -272,8 +272,8 @@ export async function draftWithGemini(trip: Trip, inputs: PreferenceInput[], mem
   if (m.budgetSet) {
     const trimmed = fitToBudget(draft.items, draft.days, m.budgetPerPerson);
     if (trimmed.length) {
-      emit(`Trimmed ${trimmed.length} pricey extra${trimmed.length === 1 ? "" : "s"} to land under $${m.budgetPerPerson.toLocaleString()}…`);
-      draft.summary += ` To stay under $${m.budgetPerPerson.toLocaleString()} per person I left out ${trimmed.slice(0, 3).join(", ")}${trimmed.length > 3 ? ` and ${trimmed.length - 3} more` : ""} — add any back if the group would rather stretch.`;
+      emit(`Trimmed ${trimmed.length} pricey extra${trimmed.length === 1 ? "" : "s"} to land under €${m.budgetPerPerson.toLocaleString()}…`);
+      draft.summary += ` To stay under €${m.budgetPerPerson.toLocaleString()} per person I left out ${trimmed.slice(0, 3).join(", ")}${trimmed.length > 3 ? ` and ${trimmed.length - 3} more` : ""} — add any back if the group would rather stretch.`;
     }
   }
   return draft;

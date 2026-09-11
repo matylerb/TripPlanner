@@ -5,7 +5,10 @@ import { ArrowRight, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { BudgetPanel } from "@/components/trip/budget-panel";
+import { FriendsGoing } from "@/components/trip/friends-going";
+import { FriendsNearby } from "@/components/trip/friends-nearby";
 import { Itinerary } from "@/components/trip/itinerary";
+import { ThingsToDo } from "@/components/trip/things-to-do";
 import { ButtonLink, Empty, Pill } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { fmtRange, plural } from "@/lib/format";
@@ -33,6 +36,10 @@ export default function PlanPage() {
   const locked = state.trip.status === "committed" || state.trip.status === "booked";
   const committedCount = state.members.filter((m) => m.committed).length;
   const d = state.trip.destination!;
+  const activityCount = state.items.filter((i) => i.type === "activity").length;
+  const mealCount = state.items.filter((i) => i.type === "meal").length;
+  const flightCount = state.items.filter((i) => i.type === "flight").length;
+  const totalVotes = state.items.reduce((s, i) => s + Object.keys(i.votes).length, 0);
 
   return (
     <div className="px-4 sm:px-8 pt-6">
@@ -76,6 +83,14 @@ export default function PlanPage() {
         </div>
       </motion.header>
 
+      {/* Quick stats */}
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <Pill tone="sage">{plural(activityCount, "activity", "activities")}</Pill>
+        <Pill tone="gold">{plural(mealCount, "meal")}</Pill>
+        <Pill tone="sky">{plural(flightCount, "flight")}</Pill>
+        {totalVotes > 0 && <Pill tone="accent">{plural(totalVotes, "vote")}</Pill>}
+      </div>
+
       <div className="grid xl:grid-cols-[1fr_360px] gap-6 items-start">
         <div>
           {!locked && <p className="mb-4 text-sm text-fg-3">Click a title or a price to edit. Drag the handle to reorder. Everyone sees changes instantly.</p>}
@@ -83,6 +98,9 @@ export default function PlanPage() {
         </div>
         <div className="xl:sticky xl:top-[4.5rem] space-y-4">
           <BudgetPanel state={state} />
+          <FriendsGoing state={state} readOnly={locked} />
+          <FriendsNearby state={state} readOnly={locked} />
+          <ThingsToDo state={state} readOnly={locked} />
         </div>
       </div>
     </div>

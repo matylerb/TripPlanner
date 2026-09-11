@@ -35,10 +35,10 @@ const steps = [
 ];
 
 const chatDemo = [
-  { who: "Maya", color: "#d4562e", text: "somewhere warm in March, ~$1,200 each?" },
+  { who: "Maya", color: "#d4562e", text: "somewhere warm in March, ~€1,200 each?" },
   { who: "Jules", color: "#4d7ea8", text: "I hate early flights. otherwise in." },
   { who: "Sam", color: "#6f8f6a", text: "food city please. tacos or tapas." },
-  { who: "AI", color: "#14120f", text: "Drafting Lisbon · 5 nights · $1,140 pp" },
+  { who: "AI", color: "#14120f", text: "Drafting Lisbon · 5 nights · €1,140 pp" },
   { who: "Priya", color: "#c9962b", text: "one big dinner, one free day 🙏" },
   { who: "Maya", color: "#d4562e", text: "sintra day trip 👍👍👍" },
 ];
@@ -59,9 +59,13 @@ export default function Landing() {
           <nav className="hidden md:flex items-center gap-8 text-sm text-fg-2">
             <a href="#how" className="hover:text-fg transition-colors">How it works</a>
             <a href="#principles" className="hover:text-fg transition-colors">Principles</a>
+            <Link href="/friends" className="hover:text-fg transition-colors">Friends</Link>
           </nav>
           <div className="flex items-center gap-3">
             <ThemeToggle />
+            <Link href="/friends" className="md:hidden text-fg-2 hover:text-fg transition-colors" aria-label="Friends">
+              <Users className="size-5" />
+            </Link>
             <ButtonLink href="/new" size="md" variant="ink">
               Start a trip <ArrowRight className="size-4" />
             </ButtonLink>

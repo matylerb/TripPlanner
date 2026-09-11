@@ -23,7 +23,7 @@ export interface Poi {
   type: ItemType;
   lat: number;
   lng: number;
-  cost: number; // per person USD
+  cost: number; // per person EUR
   duration: string;
   slot: "morning" | "midday" | "afternoon" | "evening";
   description: string;
@@ -268,7 +268,7 @@ export const DESTINATIONS: DestinationProfile[] = [
       { title: "Surf lesson in Canggu", type: "activity", lat: -8.6478, lng: 115.1385, cost: 30, duration: "2.5h", slot: "morning", description: "Beginner-friendly black-sand break at Batu Bolong.", tags: ["beach", "adventure"] },
       { title: "Uluwatu Temple & Kecak fire dance", type: "activity", lat: -8.8291, lng: 115.0849, cost: 15, duration: "3h", slot: "evening", description: "Cliff-top temple, sunset, a hundred chanting men.", tags: ["culture", "romantic"] },
       { title: "Spa afternoon in Ubud", type: "activity", lat: -8.5148, lng: 115.2603, cost: 35, duration: "2h", slot: "afternoon", description: "Balinese massage, flower bath, and silence.", tags: ["wellness", "luxury"] },
-      { title: "Warung lunch at Warung Biah Biah", type: "meal", lat: -8.5088, lng: 115.2647, cost: 6, duration: "1h", slot: "midday", description: "Small plates of Balinese classics for a few dollars.", tags: ["food", "budget"] },
+      { title: "Warung lunch at Warung Biah Biah", type: "meal", lat: -8.5088, lng: 115.2647, cost: 6, duration: "1h", slot: "midday", description: "Small plates of Balinese classics for a few euros.", tags: ["food", "budget"] },
       { title: "Beach club sunset at Finns", type: "activity", lat: -8.6651, lng: 115.1329, cost: 25, duration: "3h", slot: "evening", description: "Daybeds, DJs, and a pink sky over Berawa.", tags: ["nightlife", "beach"] },
       { title: "Dinner at Locavore NXT", type: "meal", lat: -8.5106, lng: 115.2609, cost: 110, duration: "3h", slot: "evening", description: "Hyper-local tasting menu in a Ubud jungle building.", tags: ["food", "luxury"] },
       { title: "Nusa Penida day trip", type: "activity", lat: -8.7274, lng: 115.5444, cost: 65, duration: "10h", slot: "morning", description: "Kelingking cliff, snorkelling with mantas.", tags: ["adventure", "beach", "nature"] },
@@ -472,6 +472,35 @@ export function airlinesFor(slug: string) {
     "new-york": "default",
   };
   return [...AIRLINES[map[slug] ?? "default"], ...AIRLINES.default.slice(0, 2)];
+}
+
+/* ------------------------------------------------------------------ */
+/* Things-to-do helpers: ratings + category grouping for POIs          */
+/* ------------------------------------------------------------------ */
+
+function hashStr(s: string) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+/** Deterministic "review score" for a POI, so the same place always shows the same rating. */
+export function poiRating(p: Poi): number {
+  let r = 3.9 + (hashStr(p.title) % 10) / 10;
+  if (p.tags.includes("luxury")) r += 0.15;
+  if (p.cost === 0) r -= 0.05;
+  return Math.round(Math.max(3.7, Math.min(4.9, r)) * 10) / 10;
+}
+
+export type PoiCategory = "Museums & Culture" | "Food & Drink" | "Outdoors & Nature" | "Nightlife" | "Wellness & Relax" | "Sightseeing";
+
+export function poiCategory(p: Poi): PoiCategory {
+  if (p.type === "meal") return "Food & Drink";
+  if (p.tags.includes("wellness")) return "Wellness & Relax";
+  if (p.tags.includes("nightlife")) return "Nightlife";
+  if (p.tags.includes("art") || p.tags.includes("history") || p.tags.includes("culture")) return "Museums & Culture";
+  if (p.tags.includes("nature") || p.tags.includes("adventure") || p.tags.includes("beach")) return "Outdoors & Nature";
+  return "Sightseeing";
 }
 
 export const INTEREST_OPTIONS: { key: Tag; label: string; emoji: string }[] = [

@@ -40,13 +40,15 @@ export interface StoreState {
   applyDraft(tripId: string, draft: DraftResult): void;
   updateTripMeta(tripId: string, patch: Partial<Trip>): void;
 
-  addItem(tripId: string, dayId: string, type: ItemType, title?: string): ItineraryItem;
+  addItem(tripId: string, dayId: string, type: ItemType, title?: string, extra?: { details?: ItineraryItem["details"]; costEstimate?: number }): ItineraryItem;
   updateItem(tripId: string, itemId: string, patch: Partial<Pick<ItineraryItem, "title" | "costEstimate" | "type">> & { details?: ItineraryItem["details"] }): void;
   deleteItem(tripId: string, itemId: string): void;
   reorderItems(tripId: string, dayId: string, orderedIds: string[]): void;
   vote(tripId: string, itemId: string, v: "up" | "down"): void;
   addComment(tripId: string, itemId: string, text: string): void;
   updateDayLocation(tripId: string, dayId: string, location: string): void;
+  toggleTripFriend(tripId: string, friendId: string): void;
+  setTripFriends(tripId: string, friendIds: string[]): void;
 
   setCommitted(tripId: string, committed: boolean): void;
   lockTrip(tripId: string): void;
@@ -240,22 +242,22 @@ export const useStore = create<StoreState>()((set, get) => {
       mutate(tripId, (s) => Object.assign(s.trip, patch));
     },
 
-    addItem(tripId, dayId, type, title) {
+    addItem(tripId, dayId, type, title, extra) {
       const item: ItineraryItem = {
         id: nanoid(10),
         dayId,
         type,
         title: title ?? { flight: "New flight", lodging: "New stay", activity: "New activity", meal: "New meal", transit: "Getting around" }[type],
-        details: {},
-        costEstimate: 0,
+        details: extra?.details ?? {},
+        costEstimate: extra?.costEstimate ?? 0,
         orderIndex: 0,
         votes: {},
         comments: [],
       };
       mutate(tripId, (s) => {
         const day = s.days.find((d) => d.id === dayId);
-        item.details.lat = day?.lat;
-        item.details.lng = day?.lng;
+        item.details.lat = item.details.lat ?? day?.lat;
+        item.details.lng = item.details.lng ?? day?.lng;
         item.orderIndex = s.items.filter((i) => i.dayId === dayId).length;
         s.items.push(item);
       });
@@ -311,6 +313,19 @@ export const useStore = create<StoreState>()((set, get) => {
       mutate(tripId, (s) => {
         const d = s.days.find((x) => x.id === dayId);
         if (d) d.location = location;
+      });
+    },
+
+    toggleTripFriend(tripId, friendId) {
+      mutate(tripId, (s) => {
+        const cur = s.trip.friendIds ?? [];
+        s.trip.friendIds = cur.includes(friendId) ? cur.filter((id) => id !== friendId) : [...cur, friendId];
+      });
+    },
+
+    setTripFriends(tripId, friendIds) {
+      mutate(tripId, (s) => {
+        s.trip.friendIds = friendIds;
       });
     },
 

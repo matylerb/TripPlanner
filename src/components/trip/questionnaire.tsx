@@ -8,7 +8,7 @@ import { mergePrefs } from "@/lib/ai";
 import { DESTINATIONS, INTEREST_OPTIONS, ORIGINS } from "@/lib/ai/destinations";
 import { useStore } from "@/lib/store";
 import type { Pace, StructuredPrefs, TripState } from "@/lib/types";
-import { usd } from "@/lib/format";
+import { eur } from "@/lib/format";
 
 export function Questionnaire({ state, onDone }: { state: TripState; onDone?: () => void }) {
   const addInput = useStore((s) => s.addInput);
@@ -55,7 +55,7 @@ export function Questionnaire({ state, onDone }: { state: TripState; onDone?: ()
       surprise ? "Surprise me" : destination ? `Destination: ${destination}` : "No destination preference",
       `from ${ORIGINS[origin].name}`,
       start && end ? `${start} → ${end}` : `${nights} nights${flexible ? ", flexible" : ""}`,
-      `${usd(budget)}/person`,
+      `${eur(budget)}/person`,
       `${pace} pace`,
       interests.length ? `into ${interests.join(", ")}` : "",
       climate ? `${climate} weather` : "",
@@ -129,7 +129,7 @@ export function Questionnaire({ state, onDone }: { state: TripState; onDone?: ()
       <Field n="4" label="Budget per person" hint="All-in: flights, stay, food, fun. The group's draft is built to the lowest number.">
         <div className="flex items-center gap-4 max-w-lg">
           <input type="range" min={400} max={6000} step={50} value={budget} onChange={(e) => setBudget(+e.target.value)} className="accent-[var(--accent)] flex-1" />
-          <span className="font-display text-3xl tabular w-28 text-right">{usd(budget)}</span>
+          <span className="font-display text-3xl tabular w-28 text-right">{eur(budget)}</span>
         </div>
       </Field>
 
