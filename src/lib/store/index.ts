@@ -247,7 +247,10 @@ export const useStore = create<StoreState>()((set, get) => {
         s.trip.draftedAt = new Date().toISOString();
         s.days = draft.days;
         s.items = draft.items;
-        s.members.forEach((m) => (m.committed = false));
+        const me = get().me;
+        s.members.forEach((m) => {
+          if (!me || m.id === me.id) m.committed = false;
+        });
         s.bookings = [];
         s.messages.push({ id: nanoid(8), tripId, memberId: "ai", kind: "ai", text: `Draft ready: ${draft.destination.name}, ${draft.days.length} days. Head to the Plan tab to edit it together.`, createdAt: new Date().toISOString() });
       });
@@ -399,7 +402,10 @@ export const useStore = create<StoreState>()((set, get) => {
         s.trip.status = "reviewing";
         s.trip.bookingSearchState = "idle";
         s.bookings = [];
-        s.members.forEach((m) => (m.committed = false));
+        const me = get().me;
+        s.members.forEach((m) => {
+          if (!me || m.id === me.id) m.committed = false;
+        });
         s.messages.push({ id: nanoid(8), tripId, memberId: "system", kind: "system", text: "Planning reopened.", createdAt: new Date().toISOString() });
       });
     },
