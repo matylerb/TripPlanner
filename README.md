@@ -2,7 +2,7 @@
 
 A group plans a trip together through chat or a short questionnaire. The planner turns everyone's input into a day-by-day itinerary and a per-person budget. The group edits it live, votes, and comments. Nothing is searched or booked until every member commits. After the lock, the app finds ranked flights, stays, and tickets with pre-filled provider links, and lays the whole trip out on a map.
 
-Built from `Plan.md`. **Runs with zero configuration** — no API keys, no accounts, no database.
+Built from `Plan.md`. Gemini is the planning agent; Google Places and Google Maps handle the geography. Without keys, a local planner keeps everything working.
 
 ## Run it
 
@@ -13,16 +13,18 @@ npm run dev
 
 Open http://localhost:3000, start a trip, then **copy the invite link and open it in a second tab**. Each tab is its own person (identity lives in `sessionStorage`), so you can watch chat, edits, votes, presence, and the budget sync live between tabs.
 
-## How it works without keys
+## AI and services
 
-| Plan.md said      | This MVP uses                                                                                                       | Swap to the real thing                                                                    |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Supabase Realtime | `localStorage` + `BroadcastChannel` (`src/lib/store/sync.ts`). Version-checked merges, presence heartbeats.        | Replace `sync.ts` with a Supabase Realtime adapter; the store API in `store/index.ts` stays. |
-| Gemini            | A heuristic planner over a curated dataset of 11 destinations (`src/lib/ai/mock.ts`, `destinations.ts`).           | Set `GEMINI_API_KEY`. `/api/ai` already routes chat parsing to Gemini and falls back to the local planner on any failure. Wire draft + booking prompts in `src/app/api/ai/route.ts`. |
-| Google Maps       | Leaflet + OpenStreetMap tiles with great-circle flight arcs, per-day routes, numbered pins (`components/trip/map-view.tsx`). | Set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and replace `MapView`; `buildMapData()` already produces the pins/routes/arcs. |
-| Booking APIs      | Ranked options with real deep links: Google Flights, Booking.com, Hotels.com, GetYourGuide, Viator, Airbnb.        | Replace `searchBookingsMock`. The `BookingOption` shape and the select → confirm flow stay. |
+| Piece            | What runs                                                                                                                                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Planning agent   | **Gemini** via `/api/ai` (`src/lib/ai/gemini.ts`). Chat messages are parsed into structured preferences with the flash model. "Generate draft" sends the whole merged brief to the pro model with a JSON schema; it picks the destination, dates, and every itinerary item. Progress streams back to the UI as NDJSON. |
+| Place pinning    | **Google Places API (New)**. Every non-flight item Gemini proposes is resolved to real coordinates by text search, biased to the destination, so the map is accurate.                                                            |
+| Map              | **Google Maps JavaScript API** (`components/trip/google-map-view.tsx`): flight arcs, per-day routes, numbered pins.                                                                                                              |
+| Realtime         | `localStorage` + `BroadcastChannel` (`src/lib/store/sync.ts`). Each browser tab is its own member. Swap for Supabase/Firebase Realtime without touching the store API.                                                           |
+| Booking search   | Local, deterministic. Produces ranked options with real pre-filled deep links (Google Flights, Booking.com, Hotels.com, GetYourGuide, Viator, Airbnb).                                                                           |
+| Fallback         | If `GEMINI_API_KEY` is missing or a call fails, the local heuristic planner (`src/lib/ai/mock.ts`, 11 curated destinations) takes over automatically. If `GEMINI_PRO_MODEL` isn't available to your key, drafting retries on the flash model. |
 
-Copy `.env.example` to `.env.local` when you have keys. Everything in it is optional.
+Copy `.env.example` to `.env` and fill in `GEMINI_API_KEY`, `GOOGLE_PLACES_API_KEY`, and `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Model names come from `GEMINI_FLASH_MODEL` / `GEMINI_PRO_MODEL`.
 
 ## Screens
 
@@ -67,4 +69,4 @@ npm run lint    # eslint
 
 - Trips live in one browser. Cross-device sharing needs the Supabase adapter.
 - Concurrent edits from two tabs in the same instant are last-write-wins.
-- The local planner knows 11 destinations. Ask for one it doesn't know and it picks the closest fit and tells you the runner-up.
+- The local fallback planner knows 11 destinations; Gemini knows everywhere.

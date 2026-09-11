@@ -1,13 +1,13 @@
-import type { AIProvider } from "./provider";
+import type { AIProvider, DraftResult } from "./provider";
 import { aiReplyFor, generateDraftMock, parsePreferencesMock, searchBookingsMock } from "./mock";
 import type { StructuredPrefs } from "../types";
 
 /**
  * Client-side AI facade.
  *
- * Every call first tries `/api/ai`, which uses Gemini when GEMINI_API_KEY is set.
- * When the key is missing (or the call fails) we fall back to the local heuristic
- * planner so the whole product works with zero configuration.
+ * Every call goes to `/api/ai`, where Gemini does the work when GEMINI_API_KEY is
+ * set. If the key is missing or Gemini fails, we fall back to the local heuristic
+ * planner so the product keeps working.
  */
 
 let geminiAvailable: boolean | null = null;
@@ -33,6 +33,52 @@ async function callApi<T>(task: string, payload: unknown): Promise<T | null> {
   }
 }
 
+type DraftEvent = { type: "progress"; message: string } | { type: "result"; result: DraftResult } | { type: "fallback"; reason?: string };
+
+/** Streams the draft task: progress lines arrive as Gemini works, then the result. */
+async function streamDraft(payload: unknown, onProgress?: (m: string) => void): Promise<DraftResult | null> {
+  if (geminiAvailable === false) return null;
+  try {
+    const res = await fetch("/api/ai", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ task: "draft", payload }),
+    });
+    if (!res.ok || !res.body) return null;
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let result: DraftResult | null = null;
+    let fellBack = false;
+    const handle = (line: string) => {
+      if (!line.trim()) return;
+      const ev = JSON.parse(line) as DraftEvent;
+      if (ev.type === "progress") onProgress?.(ev.message);
+      else if (ev.type === "result") result = ev.result;
+      else if (ev.type === "fallback") fellBack = true;
+    };
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl: number;
+      while ((nl = buffer.indexOf("\n")) >= 0) {
+        handle(buffer.slice(0, nl));
+        buffer = buffer.slice(nl + 1);
+      }
+    }
+    if (buffer.trim()) handle(buffer);
+    if (fellBack) {
+      geminiAvailable = null; // a one-off failure; try again next time
+      return null;
+    }
+    if (result) geminiAvailable = true;
+    return result;
+  } catch {
+    return null;
+  }
+}
+
 export const ai: AIProvider = {
   get name() {
     return geminiAvailable ? "Gemini" : "Local planner";
@@ -48,14 +94,14 @@ export const ai: AIProvider = {
   },
 
   async generateDraft(trip, inputs, members, onProgress) {
-    onProgress?.("Warming up the planner…");
-    const remote = await callApi<Awaited<ReturnType<typeof generateDraftMock>>>("draft", { trip, inputs, members });
+    const remote = await streamDraft({ trip, inputs, members }, onProgress);
     if (remote) return remote;
+    onProgress?.("Gemini unavailable — using the local planner…");
     return generateDraftMock(trip, inputs, members, onProgress);
   },
 
   async searchBookings(trip, items, memberCount, onProgress) {
-    // Booking search is always local: it produces real, pre-filled provider search links.
+    // Booking search stays local: it produces real, pre-filled provider search links.
     return searchBookingsMock(trip, items, memberCount, onProgress);
   },
 };
