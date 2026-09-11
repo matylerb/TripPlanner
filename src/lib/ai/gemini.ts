@@ -20,7 +20,11 @@ import type { DraftResult, ProgressFn } from "./provider";
  */
 
 const FLASH = process.env.GEMINI_FLASH_MODEL || "gemini-2.5-flash";
-const PRO = process.env.GEMINI_PRO_MODEL || "gemini-2.5-pro";
+// Drafting uses a light model for speed. Override with GEMINI_DRAFT_MODEL; falls back to FLASH if unavailable.
+const DRAFT = process.env.GEMINI_DRAFT_MODEL || "gemini-flash-lite-latest";
+// Flash models "think" before answering, which is most of their latency; turn it off.
+// Lite models have no thinking and reject the option, so it is only sent to FLASH.
+const NO_THINKING = { thinkingConfig: { thinkingBudget: 0 } };
 
 let client: GoogleGenAI | null = null;
 function getClient() {
@@ -45,7 +49,7 @@ Only include keys the message actually supports. Keys: destination (string, a ci
   const res = await getClient().models.generateContent({
     model: FLASH,
     contents: prompt,
-    config: { responseMimeType: "application/json", temperature: 0.2 },
+    config: { responseMimeType: "application/json", temperature: 0.2, ...NO_THINKING },
   });
   const parsed = JSON.parse(res.text ?? "{}") as Record<string, unknown> & { reply?: string };
   const { reply, ...prefs } = parsed;
@@ -80,12 +84,13 @@ interface GeminiPlan {
   startDate: string;
   endDate: string;
   summary: string;
+  totalPerPerson?: number;
   days: GeminiDay[];
 }
 
 const PLAN_SCHEMA = {
   type: "object",
-  required: ["destination", "origin", "startDate", "endDate", "summary", "days"],
+  required: ["destination", "origin", "startDate", "endDate", "summary", "totalPerPerson", "days"],
   properties: {
     destination: {
       type: "object",
@@ -114,6 +119,7 @@ const PLAN_SCHEMA = {
     startDate: { type: "string", description: "YYYY-MM-DD" },
     endDate: { type: "string", description: "YYYY-MM-DD, the day the group flies home" },
     summary: { type: "string", description: "2-3 sentences to the group: why this place, how the days are shaped, how it fits the budget, and the runner-up destination." },
+    totalPerPerson: { type: "number", description: "Sum of every item's costPerPerson across all days. Must be at or under the budget cap." },
     days: {
       type: "array",
       items: {
@@ -131,7 +137,7 @@ const PLAN_SCHEMA = {
               properties: {
                 type: { type: "string", enum: ["flight", "lodging", "activity", "meal", "transit"] },
                 title: { type: "string", description: "Specific and real. For flights: 'JFK → LIS'. For lodging: 'Hotel name, neighbourhood'." },
-                description: { type: "string", description: "One vivid sentence, max 20 words." },
+                description: { type: "string", description: "One short sentence, max 12 words." },
                 placeQuery: { type: "string", description: "A Google Maps search string that finds this exact place, e.g. 'Cervejaria Ramiro, Lisbon'. Omit for flights." },
                 lat: { type: "number" },
                 lng: { type: "number" },
@@ -187,7 +193,7 @@ RULES
 2. Day 1 = arrival: outbound flight (${origin.airport} → destination airport), an airport transit, ONE lodging item (check-in, with nights = total nights and costPerPerson = total lodging cost per person for the whole stay), then one evening item. Last day = departure: at most one short morning item, a transit to the airport, the return flight. Middle days: ${perDay} activities/meals spaced through the day, at least one meal per day.
 3. If "No early flights" is a deal-breaker, no departure before 10:00.
 4. Every non-flight item must be a real, specific, currently-operating place with a placeQuery that Google Maps can find. No generic "local restaurant". Include your best lat/lng.
-5. Costs are USD per person. Be realistic for the destination. The sum of everything must fit the budget with ~10% to spare.
+5. Costs are USD per person and realistic for the destination. HARD CAP: the sum of every costPerPerson (both flights + lodging + all activities, meals, transit) must be at most ${m.budgetSet ? Math.round(m.budgetPerPerson * 0.9) : 1350}. Add it up, write it in totalPerPerson, and if it is over, choose cheaper lodging and free/low-cost activities until it fits.
 6. Pure JSON matching the schema. No markdown.`;
 }
 
@@ -235,7 +241,7 @@ export async function draftWithGemini(trip: Trip, inputs: PreferenceInput[], mem
   emit(`Reading ${inputs.length} input${inputs.length === 1 ? "" : "s"} from ${members.length} ${members.length === 1 ? "person" : "people"}…`);
   const prompt = buildDraftPrompt(trip, inputs, members);
 
-  emit(`Asking Gemini (${PRO}) to choose a destination and shape the days…`);
+  emit(`Asking Gemini (${DRAFT}) to choose a destination and shape the days…`);
   const text = await generatePlanJson(prompt, emit);
   const plan = JSON.parse(text) as GeminiPlan;
   validatePlan(plan);
@@ -261,21 +267,63 @@ export async function draftWithGemini(trip: Trip, inputs: PreferenceInput[], mem
   });
   emit(pinned ? `${pinned} of ${geocodable.length} places confirmed on the map. Pricing it out…` : "Using Gemini's coordinates. Pricing it out…");
 
-  return toDraftResult(trip, plan, start, end);
+  const draft = toDraftResult(trip, plan, start, end);
+  const m = mergePrefs(inputs);
+  if (m.budgetSet) {
+    const trimmed = fitToBudget(draft.items, draft.days, m.budgetPerPerson);
+    if (trimmed.length) {
+      emit(`Trimmed ${trimmed.length} pricey extra${trimmed.length === 1 ? "" : "s"} to land under $${m.budgetPerPerson.toLocaleString()}…`);
+      draft.summary += ` To stay under $${m.budgetPerPerson.toLocaleString()} per person I left out ${trimmed.slice(0, 3).join(", ")}${trimmed.length > 3 ? ` and ${trimmed.length - 3} more` : ""} — add any back if the group would rather stretch.`;
+    }
+  }
+  return draft;
 }
 
-/** Try the pro model first; if that model name isn't available to this key, retry on flash. */
+/**
+ * Deterministic budget fit. Lite models are fast but loose with arithmetic, so if the
+ * draft's per-person subtotal is over the group's cap, drop the most expensive optional
+ * items — paid activities first, then meals on days that still have another meal.
+ * Never flights, lodging, transit, day 1 or the last day. Returns the titles removed.
+ */
+function fitToBudget(items: ItineraryItem[], days: ItineraryDay[], cap: number): string[] {
+  const total = () => items.reduce((s, i) => s + i.costEstimate, 0);
+  const removed: string[] = [];
+  const lastDay = days.length;
+  const dayOf = (i: ItineraryItem) => days.find((d) => d.id === i.dayId)!;
+  const optional = (i: ItineraryItem) => {
+    const day = dayOf(i);
+    if (day.dayNumber === 1 || day.dayNumber === lastDay || i.costEstimate <= 0) return false;
+    const sameDay = items.filter((x) => x.dayId === i.dayId);
+    if (sameDay.length <= 2) return false;
+    if (i.type === "activity") return true;
+    if (i.type === "meal") return sameDay.filter((x) => x.type === "meal").length > 1;
+    return false;
+  };
+  while (total() > cap) {
+    const pool = items.filter(optional);
+    const activities = pool.filter((i) => i.type === "activity").sort((a, b) => b.costEstimate - a.costEstimate);
+    const meals = pool.filter((i) => i.type === "meal").sort((a, b) => b.costEstimate - a.costEstimate);
+    const victim = activities[0] ?? meals[0];
+    if (!victim) break;
+    items.splice(items.indexOf(victim), 1);
+    removed.push(victim.title);
+    items.filter((x) => x.dayId === victim.dayId).sort((a, b) => a.orderIndex - b.orderIndex).forEach((x, idx) => (x.orderIndex = idx));
+  }
+  return removed;
+}
+
+/** Try the (lite) draft model first; if it is unavailable or rejects the request, retry on flash with thinking off. */
 async function generatePlanJson(prompt: string, emit: ProgressFn): Promise<string> {
   const config = { responseMimeType: "application/json", responseJsonSchema: PLAN_SCHEMA, temperature: 0.7 };
   try {
-    const res = await getClient().models.generateContent({ model: PRO, contents: prompt, config });
+    const res = await getClient().models.generateContent({ model: DRAFT, contents: prompt, config });
     return res.text ?? "{}";
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (!/NOT_FOUND|not found|404/i.test(msg) || PRO === FLASH) throw err;
-    console.warn(`[ai] GEMINI_PRO_MODEL "${PRO}" is not available to this key; retrying with ${FLASH}`);
-    emit(`${PRO} isn't available on this key — switching to ${FLASH}…`);
-    const res = await getClient().models.generateContent({ model: FLASH, contents: prompt, config });
+    if (DRAFT === FLASH) throw err;
+    console.warn(`[ai] draft model "${DRAFT}" failed (${msg.slice(0, 80)}); retrying with ${FLASH}`);
+    emit(`${DRAFT} didn't answer — switching to ${FLASH}…`);
+    const res = await getClient().models.generateContent({ model: FLASH, contents: prompt, config: { ...config, ...NO_THINKING } });
     return res.text ?? "{}";
   }
 }
