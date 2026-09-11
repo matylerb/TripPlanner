@@ -13,6 +13,8 @@ import type { Identity, Presence, TripState } from "../types";
  * Replace this module with a Supabase Realtime adapter to go cross-device.
  */
 
+// Keys keep the pre-rename "tripsync" prefix on purpose: changing them would orphan
+// every trip already saved in a returning user's browser under the old key.
 const TRIPS_KEY = "tripsync:trips:v1";
 const ME_KEY = "tripsync:me:v1";
 const CHANNEL = "tripsync:v1";

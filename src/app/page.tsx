@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Lock, MessageSquare, Map, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
-import { ButtonLink, Logo, Reveal, ThemeToggle, Pill } from "@/components/ui";
+import { ButtonLink, Logo, Reveal, ThemeToggle, Pill, cn } from "@/components/ui";
 import { RouteIllustration } from "@/components/landing/route-illustration";
 import { useStore } from "@/lib/store";
 
@@ -75,63 +75,98 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 pt-16 sm:pt-24 pb-10 grid lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-7 relative z-10">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Pill tone="accent" className="mb-6">
-                <Sparkles className="size-3" /> Collaborative AI trip planner
-              </Pill>
-            </motion.div>
-            <h1 className="font-display-tight text-[clamp(3rem,8.5vw,7.5rem)] leading-[0.92] text-fg">
-              {["Plan the trip.", "Together.", "Then go."].map((line, i) => (
-                <span key={line} className="block overflow-hidden">
-                  <motion.span
-                    className="block"
-                    initial={{ y: "110%" }}
-                    animate={{ y: 0 }}
-                    transition={{ duration: 0.9, delay: 0.1 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    {i === 1 ? <em className="not-italic text-accent">{line}</em> : line}
-                  </motion.span>
-                </span>
-              ))}
-            </h1>
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.55 }}
-              className="mt-8 max-w-xl text-lg sm:text-xl text-fg-2 leading-relaxed"
-            >
-              A group chat that turns into an itinerary. Everyone says what they want, the planner drafts a
-              trip and a budget, the group edits it live, and nothing gets booked until everyone&apos;s in.
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.7 }}
-              className="mt-10 flex flex-wrap items-center gap-4"
-            >
-              <ButtonLink href="/new" size="lg">
-                Start a trip <ArrowRight className="size-4" />
-              </ButtonLink>
-              <a href="#how" className="group inline-flex items-center gap-2 text-fg-2 hover:text-fg transition-colors text-[15px]">
-                See how it works
-                <span className="size-6 grid place-items-center rounded-full border border-line-c group-hover:border-fg-4 transition-colors">
-                  <ArrowRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-              </a>
-            </motion.div>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1 }} className="mt-10 flex items-center gap-3 text-xs text-fg-3">
-              <span className="font-mono tracking-widest uppercase">No account needed</span>
-              <span className="size-1 rounded-full bg-fg-4" />
-              <span className="font-mono tracking-widest uppercase">Works in this browser today</span>
-            </motion.div>
-          </div>
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 pt-10 sm:pt-16 pb-10">
+          <div className="relative rounded-[2rem] border border-line-c px-4 sm:px-9 pt-10 sm:pt-14 pb-7">
+            <span className="bracket-corner bracket-tl" />
+            <span className="bracket-corner bracket-tr" />
+            <span className="bracket-corner bracket-bl" />
+            <span className="bracket-corner bracket-br" />
 
-          <div className="lg:col-span-5 relative">
-            <div className="absolute -inset-10 bg-[radial-gradient(ellipse_at_center,var(--accent-soft),transparent_65%)] opacity-70 blur-2xl" />
-            <RouteIllustration className="relative w-full h-auto" />
-            <ChatTicker />
+            <div className="grid lg:grid-cols-12 gap-10 items-center">
+              <div className="lg:col-span-7 relative z-10">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+                  <Pill tone="accent" className="mb-6">
+                    <Sparkles className="size-3" /> Collaborative AI trip planner
+                  </Pill>
+                </motion.div>
+                <h1 className="font-display-tight text-[clamp(3rem,8.5vw,7.5rem)] leading-[0.92] text-fg">
+                  {["Plan the trip.", "Together.", "Then go."].map((line, i) => (
+                    <span key={line} className="block overflow-hidden">
+                      <motion.span
+                        className="block"
+                        initial={{ y: "110%" }}
+                        animate={{ y: 0 }}
+                        transition={{ duration: 0.9, delay: 0.1 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        {i === 1 ? <em className="not-italic text-accent">{line}</em> : line}
+                      </motion.span>
+                    </span>
+                  ))}
+                </h1>
+                <motion.p
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.55 }}
+                  className="mt-8 max-w-xl text-lg sm:text-xl text-fg-2 leading-relaxed"
+                >
+                  A group chat that turns into an itinerary. Everyone says what they want, the planner drafts a
+                  trip and a budget, the group edits it live, and nothing gets booked until everyone&apos;s in.
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.7 }}
+                  className="mt-10 flex flex-wrap items-center gap-4"
+                >
+                  <ButtonLink href="/new" size="lg">
+                    Start a trip <ArrowRight className="size-4" />
+                  </ButtonLink>
+                  <a href="#how" className="group inline-flex items-center gap-2 text-fg-2 hover:text-fg transition-colors text-[15px]">
+                    See how it works
+                    <span className="size-6 grid place-items-center rounded-full border border-line-c group-hover:border-fg-4 transition-colors">
+                      <ArrowRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
+                  </a>
+                </motion.div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1 }} className="mt-10 flex items-center gap-3 text-xs text-fg-3">
+                  <span className="font-mono tracking-widest uppercase">No account needed</span>
+                  <span className="size-1 rounded-full bg-fg-4" />
+                  <span className="font-mono tracking-widest uppercase">Works in this browser today</span>
+                </motion.div>
+              </div>
+
+              <div className="lg:col-span-5 relative">
+                <div className="absolute -inset-10 bg-[radial-gradient(ellipse_at_center,var(--accent-soft),transparent_65%)] opacity-70 blur-2xl" />
+                <RouteIllustration className="relative w-full h-auto" />
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 5.1, duration: 0.5 }}
+                  className="relative -mt-2 inline-flex items-center gap-2.5 rounded-lg border border-line-c bg-bg px-3.5 py-2 font-mono text-[11px] tracking-wider text-fg-2"
+                >
+                  <span className="size-1.5 rounded-full bg-sky animate-pulse" />
+                  ROUTE_04 &middot; 4 STOPS &middot; 1 BUDGET
+                </motion.div>
+                <ChatTicker />
+              </div>
+            </div>
+
+            {/* compact step ledger — full detail lives in "How it works" below */}
+            <Reveal className="mt-10 pt-6 border-t border-line-c grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5">
+              {steps.map((s) => (
+                <div key={s.n} className="flex items-center gap-3 min-w-0">
+                  <span className="font-display text-sm text-fg-3 shrink-0">{s.n}</span>
+                  <div className="min-w-0">
+                    <div className="text-[13px] text-fg truncate">{s.title}</div>
+                    <div className="mt-1.5 flex gap-1">
+                      {Array.from({ length: 4 }).map((_, j) => (
+                        <span key={j} className={cn("h-1 w-3 rounded-full", j <= Number(s.n) - 1 ? "bg-accent" : "bg-bg-3")} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </Reveal>
           </div>
         </div>
       </section>
@@ -242,7 +277,7 @@ export default function Landing() {
 
       <footer className="mx-auto max-w-7xl px-5 sm:px-8 pb-10 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between text-xs text-fg-3">
         <Logo compact />
-        <span className="font-mono tracking-wider">TRIPSYNC · MVP · NO PAYMENTS, NO PURCHASES, JUST PLANS</span>
+        <span className="font-mono tracking-wider">GOPLAN · MVP · NO PAYMENTS, NO PURCHASES, JUST PLANS</span>
       </footer>
     </div>
   );

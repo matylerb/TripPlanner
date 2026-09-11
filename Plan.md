@@ -1,4 +1,4 @@
-# Build Prompt: TripSync — Collaborative AI Trip Planner (MVP)
+# Build Prompt: GoPlan — Collaborative AI Trip Planner (MVP)
 
 Paste this into your AI app-builder (bolt.new, v0, Lovable, Replit Agent, etc.) to scaffold the project.
 

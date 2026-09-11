@@ -155,7 +155,7 @@ export function AvatarStack({
 /* ---------- Logo ---------- */
 export function Logo({ className, compact }: { className?: string; compact?: boolean }) {
   return (
-    <Link href="/" className={cn("group inline-flex items-center gap-2.5 select-none", className)} aria-label="TripSync home">
+    <Link href="/" className={cn("group inline-flex items-center gap-2.5 select-none", className)} aria-label="GoPlan home">
       <span className="relative grid place-items-center size-7 rounded-lg bg-fg text-bg overflow-hidden">
         <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 18c3-6 6-9 9-9s5 3 7 3" className="transition-transform duration-500 group-hover:-translate-y-0.5" />
@@ -163,7 +163,7 @@ export function Logo({ className, compact }: { className?: string; compact?: boo
           <circle cx="20" cy="12" r="1.6" fill="currentColor" stroke="none" />
         </svg>
       </span>
-      {!compact && <span className="font-display text-[19px] tracking-tight">TripSync</span>}
+      {!compact && <span className="font-display text-[19px] tracking-tight">GoPlan</span>}
     </Link>
   );
 }

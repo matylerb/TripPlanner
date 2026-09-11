@@ -3,22 +3,22 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-display: var(--font-fraunces), "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
-  --color-paper: #f6f1e9;
-  --color-paper-2: #efe8dc;
-  --color-paper-3: #e6ddcd;
-  --color-ink: #14120f;
-  --color-ink-2: #3a352e;
-  --color-ink-3: #6b6459;
-  --color-ink-4: #a49c8f;
-  --color-line: #d9d0c2;
+  --color-paper: #ffffff;
+  --color-paper-2: #f5f5f5;
+  --color-paper-3: #ebebeb;
+  --color-ink: #000000;
+  --color-ink-2: #262626;
+  --color-ink-3: #5c5c5c;
+  --color-ink-4: #a3a3a3;
+  --color-line: #e2e2e2;
 
-  --color-sienna: #d4562e;
-  --color-sienna-2: #b8451f;
-  --color-sienna-soft: #f5dccf;
+  --color-sienna: #6d001a;
+  --color-sienna-2: #520014;
+  --color-sienna-soft: #f5dee3;
   --color-sage: #6f8f6a;
   --color-sage-soft: #dfe8d9;
   --color-sky: #4d7ea8;
@@ -44,28 +44,28 @@
   --fg-3: var(--color-ink-3);
   --fg-4: var(--color-ink-4);
   --line: var(--color-line);
-  --card: #fbf8f3;
+  --card: #ffffff;
   --accent: var(--color-sienna);
   --accent-2: var(--color-sienna-2);
   --accent-soft: var(--color-sienna-soft);
-  --shadow: 0 1px 2px rgba(20, 18, 15, 0.04), 0 12px 40px -12px rgba(20, 18, 15, 0.18);
-  --shadow-lg: 0 2px 4px rgba(20, 18, 15, 0.05), 0 30px 80px -20px rgba(20, 18, 15, 0.3);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 40px -12px rgba(0, 0, 0, 0.18);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.05), 0 30px 80px -20px rgba(0, 0, 0, 0.3);
   color-scheme: light;
 }
 
 .dark {
-  --bg: #0f0e0c;
-  --bg-2: #171512;
-  --bg-3: #1f1c18;
-  --fg: #f3ede3;
-  --fg-2: #cfc6b8;
-  --fg-3: #978e80;
-  --fg-4: #5f574c;
-  --line: #2b2721;
-  --card: #15130f;
-  --accent: #e8683f;
-  --accent-2: #f0825f;
-  --accent-soft: #3a1f15;
+  --bg: #000000;
+  --bg-2: #0d0d0d;
+  --bg-3: #171717;
+  --fg: #ffffff;
+  --fg-2: #d4d4d4;
+  --fg-3: #8f8f8f;
+  --fg-4: #595959;
+  --line: #262626;
+  --card: #0a0a0a;
+  --accent: #b3264a;
+  --accent-2: #d6567a;
+  --accent-soft: #2b0810;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 40px -12px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.4), 0 30px 80px -20px rgba(0, 0, 0, 0.8);
   color-scheme: dark;
@@ -130,13 +130,13 @@ body {
 
 .font-display {
   font-family: var(--font-display);
-  font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 .font-display-tight {
   font-family: var(--font-display);
-  font-variation-settings: "opsz" 144, "SOFT" 50, "WONK" 0;
-  letter-spacing: -0.035em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 .tabular {
   font-variant-numeric: tabular-nums;
@@ -151,6 +151,66 @@ body {
 
 .hairline {
   border: 1px solid var(--line);
+}
+
+/* Bracket corners: small viewfinder-style marks on an instrument-panel frame */
+.bracket-corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+.bracket-corner::before,
+.bracket-corner::after {
+  content: "";
+  position: absolute;
+  background: var(--fg-4);
+}
+.bracket-corner::before {
+  width: 100%;
+  height: 1.5px;
+  top: 0;
+}
+.bracket-corner::after {
+  width: 1.5px;
+  height: 100%;
+  top: 0;
+}
+.bracket-tl {
+  top: 14px;
+  left: 14px;
+}
+.bracket-tl::before,
+.bracket-tl::after {
+  left: 0;
+}
+.bracket-tr {
+  top: 14px;
+  right: 14px;
+}
+.bracket-tr::before,
+.bracket-tr::after {
+  right: 0;
+}
+.bracket-bl {
+  bottom: 14px;
+  left: 14px;
+}
+.bracket-bl::before,
+.bracket-bl::after {
+  left: 0;
+  bottom: 0;
+  top: auto;
+}
+.bracket-br {
+  bottom: 14px;
+  right: 14px;
+}
+.bracket-br::before,
+.bracket-br::after {
+  right: 0;
+  bottom: 0;
+  top: auto;
 }
 .card {
   background: var(--card);

@@ -1,4 +1,4 @@
-# TripSync
+# GoPlan
 
 A group plans a trip together through chat or a short questionnaire. The planner turns everyone's input into a day-by-day itinerary and a per-person budget. The group edits it live, votes, and comments. Nothing is searched or booked until every member commits. After the lock, the app finds ranked flights, stays, and tickets with pre-filled provider links, and lays the whole trip out on a map.
 

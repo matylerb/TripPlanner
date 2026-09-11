@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 
 /**
  * An abstract, hand-drawn-feeling route: dotted flight arc, a few pins, and
- * a day-by-day path that draws itself on load.
+ * a day-by-day path that draws itself on load. Three leader-line annotations
+ * label the stages of the product (input, draft, budget) once the route settles.
  */
 export function RouteIllustration({ className }: { className?: string }) {
   const draw = (delay: number, dur = 2.2) => ({
@@ -17,9 +18,20 @@ export function RouteIllustration({ className }: { className?: string }) {
     animate: { scale: 1, opacity: 1 },
     transition: { type: "spring" as const, stiffness: 260, damping: 18, delay },
   });
+  const fade = (delay: number, dur = 0.6) => ({
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    transition: { duration: dur, delay },
+  });
+
+  const annotations = [
+    { step: "01", label: "GROUP INPUT", color: "var(--fg)", node: [120, 246], path: "M120 246 L120 -30 L85 -30 L85 -72", box: { x: 0, y: -72, w: 170, h: 40 } },
+    { step: "02", label: "AI DRAFT", color: "var(--color-sky)", node: [307, 131], path: "M307 131 L307 -30 L515 -30 L515 -72", box: { x: 430, y: -72, w: 170, h: 40 } },
+    { step: "03", label: "LIVE BUDGET", color: "var(--accent)", node: [500, 300], path: "M500 300 L500 420 L425 420 L425 456", box: { x: 340, y: 456, w: 170, h: 40 } },
+  ] as const;
 
   return (
-    <svg viewBox="0 0 640 420" className={className} fill="none" aria-hidden>
+    <svg viewBox="0 -80 640 580" className={className} fill="none" aria-hidden>
       <defs>
         <radialGradient id="glow" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.35" />
@@ -109,6 +121,32 @@ export function RouteIllustration({ className }: { className?: string }) {
       <motion.text x="470" y="150" textAnchor="middle" fontSize="11" fill="var(--fg-3)" fontFamily="var(--font-mono)" letterSpacing="0.1em" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.8 }}>
         DAY 1
       </motion.text>
+
+      {/* annotations: leader-lines from the route to labeled spec tags */}
+      {annotations.map((a, i) => {
+        const delay = 4.2 + i * 0.3;
+        const boxMidX = a.box.x + a.box.w / 2;
+        return (
+          <g key={a.label}>
+            <motion.rect x={a.node[0] - 3} y={a.node[1] - 3} width="6" height="6" fill={a.color} {...pop(delay)} />
+            <motion.path d={a.path} stroke="var(--fg-4)" strokeWidth="1" {...draw(delay + 0.1, 0.6)} />
+            <motion.g {...fade(delay + 0.5)}>
+              <rect x={a.box.x} y={a.box.y} width={a.box.w} height={a.box.h} fill="var(--bg)" fillOpacity="0.7" stroke="var(--line)" strokeWidth="1" />
+              <path
+                d={`M${a.box.x} ${a.box.y + 10} v-10 h10 M${a.box.x + a.box.w - 10} ${a.box.y} h10 v10 M${a.box.x + a.box.w} ${a.box.y + a.box.h - 10} v10 h-10 M${a.box.x + 10} ${a.box.y + a.box.h} h-10 v-10`}
+                stroke={a.color}
+                strokeWidth="1.5"
+              />
+              <text x={boxMidX} y={a.box.y + 16} textAnchor="middle" fontSize="9" fill="var(--fg-3)" fontFamily="var(--font-mono)" letterSpacing="0.08em">
+                STEP {a.step}
+              </text>
+              <text x={boxMidX} y={a.box.y + 30} textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--fg)" fontFamily="var(--font-mono)" letterSpacing="0.06em">
+                {a.label}
+              </text>
+            </motion.g>
+          </g>
+        );
+      })}
     </svg>
   );
 }
