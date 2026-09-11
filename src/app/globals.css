@@ -278,62 +278,6 @@ body {
   animation: pulse-ring 1.8s var(--ease-out-expo) infinite;
 }
 
-/* Leaflet overrides */
-.leaflet-container {
-  background: var(--bg-2);
-  font-family: var(--font-sans);
-}
-.leaflet-tile-pane {
-  filter: saturate(0.55) contrast(0.95) brightness(1.02);
-}
-.dark .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(190deg) brightness(0.78) contrast(0.9) saturate(0.35);
-}
-.leaflet-control-attribution {
-  background: color-mix(in srgb, var(--card) 80%, transparent) !important;
-  color: var(--fg-3) !important;
-  font-size: 10px !important;
-}
-.leaflet-control-attribution a {
-  color: var(--fg-2) !important;
-}
-.leaflet-control-zoom a {
-  background: var(--card) !important;
-  color: var(--fg) !important;
-  border-color: var(--line) !important;
-}
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: var(--card) !important;
-  color: var(--fg) !important;
-  box-shadow: var(--shadow) !important;
-  border-radius: 12px !important;
-}
-.pin {
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  background: var(--fg);
-  color: var(--bg);
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 700;
-  font-family: var(--font-sans);
-  border: 2px solid var(--bg);
-  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.45);
-}
-.pin[data-kind="lodging"] {
-  background: var(--accent);
-  color: #fff;
-}
-.pin[data-kind="airport"] {
-  background: var(--color-sky);
-  color: #fff;
-  width: 26px;
-  height: 26px;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

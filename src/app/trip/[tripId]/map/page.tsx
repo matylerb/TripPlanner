@@ -10,7 +10,7 @@ import { ButtonLink, Empty, cn } from "@/components/ui";
 import { sortedItems, useStore } from "@/lib/store";
 import { fmtDate, fmtRange, usd } from "@/lib/format";
 
-const MapView = dynamic(() => import("@/components/trip/map-view"), {
+const GoogleMapView = dynamic(() => import("@/components/trip/google-map-view"), {
   ssr: false,
   loading: () => <div className="h-full w-full shimmer" />,
 });
@@ -89,7 +89,7 @@ export default function MapPage() {
           })}
         </div>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }} className="order-1 lg:order-2 relative h-[52vh] lg:h-auto lg:rounded-[1.5rem] overflow-hidden border-y lg:border border-line-c shadow-soft">
-          <MapView state={state} selectedDay={day} focusId={focus} />
+          <GoogleMapView state={state} selectedDay={day} focusId={focus} />
           <div className="absolute left-3 bottom-3 z-[500] flex flex-wrap gap-2 text-[11px]">
             <Legend swatch="border-2 border-dashed border-sky" label="Flight" />
             <Legend swatch="bg-accent" label="Stay" />
