@@ -8,7 +8,7 @@ import { cn } from "@/components/ui";
 import { mergePrefs } from "@/lib/ai";
 import { CATEGORY_LABEL, budgetTotals } from "@/lib/budget";
 import type { TripState } from "@/lib/types";
-import { usd } from "@/lib/format";
+import { eur } from "@/lib/format";
 
 const CAT_COLORS: Record<string, string> = {
   flights: "var(--color-sky)",
@@ -43,17 +43,17 @@ export function BudgetPanel({ state, compact }: { state: TripState; compact?: bo
         <div className="eyebrow">Per person, all-in</div>
         <div className="mt-1 flex items-baseline gap-2">
           <span data-testid="per-person" className="font-display-tight text-[3rem] leading-none tabular">
-            <CountUp value={perPerson} format={(n) => usd(n)} />
+            <CountUp value={perPerson} format={(n) => eur(n)} />
           </span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-3">
           <span>
-            <span className="text-fg font-medium tabular">{usd(group)}</span> for {state.members.length}
+            <span className="text-fg font-medium tabular">{eur(group)}</span> for {state.members.length}
           </span>
           {target && (
             <span className={cn("inline-flex items-center gap-1 font-medium", delta > 0 ? "text-red-500" : "text-sage")}>
               {delta > 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-              {delta > 0 ? `${usd(delta)} over` : `${usd(-delta)} under`} the {usd(target)} target
+              {delta > 0 ? `${eur(delta)} over` : `${eur(-delta)} under`} the {eur(target)} target
             </span>
           )}
         </div>
@@ -81,7 +81,7 @@ export function BudgetPanel({ state, compact }: { state: TripState; compact?: bo
               </div>
             </div>
             <span className="tabular font-medium w-16 text-right">
-              <CountUp value={b.perPersonAmount} format={(n) => usd(n)} />
+              <CountUp value={b.perPersonAmount} format={(n) => eur(n)} />
             </span>
           </li>
         ))}

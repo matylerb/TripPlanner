@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Copy, Link2, Lock, Map, MessageSquare, ShoppingBag, Sparkles, Users } from "lucide-react";
+import { Check, Copy, Link2, Lock, Map, MessageSquare, ShoppingBag, Sparkles, Users, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -153,6 +153,9 @@ export function TripShell({ tripId, children }: { tripId: string; children: Reac
               <div className="lg:hidden">
                 <InviteButton tripId={tripId} compact />
               </div>
+              <Link href="/friends" title="Friends & chats" className="grid place-items-center size-9 rounded-full border border-line-c bg-card text-fg-2 hover:text-fg hover:border-fg-4 transition-all">
+                <UsersRound className="size-4" />
+              </Link>
               <ThemeToggle />
             </div>
           </div>

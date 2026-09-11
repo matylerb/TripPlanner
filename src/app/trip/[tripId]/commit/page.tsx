@@ -8,7 +8,7 @@ import { Avatar, Button, ButtonLink, Empty, cn } from "@/components/ui";
 import { ai } from "@/lib/ai";
 import { budgetTotals } from "@/lib/budget";
 import { useStore } from "@/lib/store";
-import { fmtRange, plural, usd } from "@/lib/format";
+import { eur, fmtRange, plural } from "@/lib/format";
 
 export default function CommitPage() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -71,8 +71,8 @@ export default function CommitPage() {
               <span className="text-sm text-fg-3">{fmtRange(state.trip.startDate, state.trip.endDate)}</span>
             </div>
             <Stat label="Days" value={String(state.days.length)} />
-            <Stat label="Per person" value={usd(perPerson)} />
-            <Stat label="Group total" value={usd(perPerson * state.members.length)} />
+            <Stat label="Per person" value={eur(perPerson)} />
+            <Stat label="Group total" value={eur(perPerson * state.members.length)} />
           </div>
 
           {/* Members */}

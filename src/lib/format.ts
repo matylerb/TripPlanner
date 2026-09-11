@@ -1,7 +1,7 @@
-export const usd = (n: number, opts: { compact?: boolean } = {}) =>
+export const eur = (n: number, opts: { compact?: boolean } = {}) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
     maximumFractionDigits: 0,
     notation: opts.compact ? "compact" : "standard",
   }).format(n);

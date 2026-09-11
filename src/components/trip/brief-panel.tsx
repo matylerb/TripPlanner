@@ -9,7 +9,7 @@ import { ai, mergePrefs } from "@/lib/ai";
 import { ORIGINS } from "@/lib/ai/destinations";
 import { useStore } from "@/lib/store";
 import type { TripState } from "@/lib/types";
-import { plural, timeAgo, usd } from "@/lib/format";
+import { eur, plural, timeAgo } from "@/lib/format";
 
 export function BriefPanel({ state }: { state: TripState }) {
   const router = useRouter();
@@ -66,7 +66,7 @@ export function BriefPanel({ state }: { state: TripState }) {
         <Stat label="Destination" value={merged.surpriseMe && !topDest ? "Surprise us" : topDest ? `${topDest[0]}${topDest[1] > 1 ? ` ×${topDest[1]}` : ""}` : "Open"} />
         <Stat label="From" value={ORIGINS[merged.origin]?.name ?? "New York"} />
         <Stat label="When" value={merged.startDate && merged.endDate ? `${merged.startDate.slice(5)} → ${merged.endDate.slice(5)}` : merged.month ? `${merged.month[0].toUpperCase()}${merged.month.slice(1)} · ${merged.nights}n` : `~${merged.nights} nights`} />
-        <Stat label="Budget / person" value={merged.budgetSet ? usd(merged.budgetPerPerson) : "Not set"} accent={merged.budgetSet} />
+        <Stat label="Budget / person" value={merged.budgetSet ? eur(merged.budgetPerPerson) : "Not set"} accent={merged.budgetSet} />
         <Stat label="Pace" value={merged.pace} cap />
         <Stat label="Weather" value={merged.climate ?? "Any"} cap />
         {interests.length > 0 && (

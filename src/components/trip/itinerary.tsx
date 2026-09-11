@@ -7,7 +7,7 @@ import { Avatar, cn } from "@/components/ui";
 import { ItemIcon, TYPE_META } from "./item-icon";
 import { sortedItems, useStore } from "@/lib/store";
 import type { ItemType, ItineraryDay, ItineraryItem, TripState } from "@/lib/types";
-import { fmtDate, timeAgo, usd } from "@/lib/format";
+import { eur, fmtDate, timeAgo } from "@/lib/format";
 
 export function Itinerary({ state, readOnly }: { state: TripState; readOnly?: boolean }) {
   return (
@@ -58,7 +58,7 @@ function DayCard({ day, state, index, readOnly }: { day: ItineraryDay; state: Tr
         </div>
         <div className="text-right shrink-0">
           <div className="eyebrow">Day / person</div>
-          <div className="font-display text-xl tabular">{usd(dayTotal)}</div>
+          <div className="font-display text-xl tabular">{eur(dayTotal)}</div>
         </div>
       </header>
 
@@ -231,7 +231,7 @@ function ItemRow({ item, state, readOnly, onDrop }: { item: ItineraryItem; state
         {/* Cost */}
         <div className="text-right shrink-0 w-[4.5rem] sm:w-24">
           {readOnly ? (
-            <div className="font-display text-lg tabular">{item.costEstimate ? usd(item.costEstimate) : "Free"}</div>
+            <div className="font-display text-lg tabular">{item.costEstimate ? eur(item.costEstimate) : "Free"}</div>
           ) : editingCost ? (
             <input
               autoFocus
@@ -250,7 +250,7 @@ function ItemRow({ item, state, readOnly, onDrop }: { item: ItineraryItem; state
             />
           ) : (
             <button onClick={() => setEditingCost(true)} className="font-display text-lg tabular hover:text-accent transition-colors" title="Edit cost per person">
-              {item.costEstimate ? usd(item.costEstimate) : "Free"}
+              {item.costEstimate ? eur(item.costEstimate) : "Free"}
             </button>
           )}
           <div className="text-[10px] text-fg-4 font-mono uppercase tracking-wider">per person</div>

@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { ItemIcon } from "@/components/trip/item-icon";
 import { ButtonLink, Empty, cn } from "@/components/ui";
 import { sortedItems, useStore } from "@/lib/store";
-import { fmtDate, fmtRange, usd } from "@/lib/format";
+import { eur, fmtDate, fmtRange } from "@/lib/format";
 
 const GoogleMapView = dynamic(() => import("@/components/trip/google-map-view"), {
   ssr: false,
@@ -78,7 +78,7 @@ export default function MapPage() {
                           <span className={cn("grid place-items-center size-6 rounded-full text-[10px] font-bold shrink-0", focus === it.id ? "bg-bg text-fg" : "bg-bg-3 text-fg-2")}>{it.type === "flight" ? "✈" : it.type === "lodging" ? "⌂" : n}</span>
                           <ItemIcon type={it.type} size={22} />
                           <span className="flex-1 min-w-0 text-sm truncate">{it.title}</span>
-                          <span className={cn("text-xs tabular", focus === it.id ? "text-bg/70" : "text-fg-3")}>{it.costEstimate ? usd(it.costEstimate) : ""}</span>
+                          <span className={cn("text-xs tabular", focus === it.id ? "text-bg/70" : "text-fg-3")}>{it.costEstimate ? eur(it.costEstimate) : ""}</span>
                         </button>
                       </li>
                     );

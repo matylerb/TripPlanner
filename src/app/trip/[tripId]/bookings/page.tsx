@@ -10,7 +10,7 @@ import { Button, ButtonLink, Empty, Pill, cn } from "@/components/ui";
 import { ai } from "@/lib/ai";
 import { useStore } from "@/lib/store";
 import type { BookingOption, ItineraryItem } from "@/lib/types";
-import { usd } from "@/lib/format";
+import { eur } from "@/lib/format";
 
 export default function BookingsPage() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -127,7 +127,7 @@ export default function BookingsPage() {
                           <div className="min-w-0">
                             <div className="font-medium truncate">{item.title}</div>
                             <div className="text-xs text-fg-3">
-                              Day {day?.dayNumber} · planned at {usd(item.costEstimate)} pp
+                              Day {day?.dayNumber} · planned at {eur(item.costEstimate)} pp
                             </div>
                           </div>
                         </div>
@@ -146,7 +146,7 @@ export default function BookingsPage() {
             <div className="card p-5 xl:sticky xl:top-[4.5rem]">
               <div className="eyebrow">Selected, per person</div>
               <div className="mt-1 font-display-tight text-[2.6rem] leading-none tabular">
-                <CountUp value={selectedTotal} format={(n) => usd(n)} />
+                <CountUp value={selectedTotal} format={(n) => eur(n)} />
               </div>
               <div className="mt-1 text-xs text-fg-3">
                 {selected.length} of {groups.reduce((s, g) => s + g.items.length, 0)} lines chosen
@@ -212,8 +212,8 @@ function OptionRow({ option, planned, booked, onSelect }: { option: BookingOptio
         </span>
       )}
       <div className="text-right shrink-0 w-24">
-        <div className="font-display text-xl tabular">{usd(option.price)}</div>
-        <div className={cn("text-[10.5px] tabular", diff > 0 ? "text-red-500" : "text-sage")}>{diff === 0 ? "on plan" : diff > 0 ? `+${usd(diff)}` : `−${usd(-diff)}`}</div>
+        <div className="font-display text-xl tabular">{eur(option.price)}</div>
+        <div className={cn("text-[10.5px] tabular", diff > 0 ? "text-red-500" : "text-sage")}>{diff === 0 ? "on plan" : diff > 0 ? `+${eur(diff)}` : `−${eur(-diff)}`}</div>
       </div>
       <div className="flex items-center gap-2 shrink-0 ml-auto">
         <a href={option.deepLink} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 h-8 px-3 rounded-lg border border-line-c text-sm hover:border-fg-4 transition-colors">

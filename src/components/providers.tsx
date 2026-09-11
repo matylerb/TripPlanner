@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useSyncExternalStore } from "react";
 import { useStore } from "@/lib/store";
+import { useSocialStore } from "@/lib/social/store";
 
 interface ThemeCtx {
   dark: boolean;
@@ -21,11 +22,13 @@ function getDark() {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const hydrate = useStore((s) => s.hydrate);
+  const hydrateSocial = useSocialStore((s) => s.hydrate);
   const dark = useSyncExternalStore(subscribeTheme, getDark, () => false);
 
   useEffect(() => {
     hydrate();
-  }, [hydrate]);
+    hydrateSocial();
+  }, [hydrate, hydrateSocial]);
 
   const toggle = useCallback(() => {
     const next = !document.documentElement.classList.contains("dark");

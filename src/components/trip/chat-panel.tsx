@@ -10,10 +10,10 @@ import type { TripState } from "@/lib/types";
 import { timeAgo } from "@/lib/format";
 
 const PROMPTS = [
-  "Somewhere warm in March, ~$1,200 each, I hate early flights",
-  "Tokyo for a week from SF, food + art, budget around $2,500",
+  "Somewhere warm in March, ~€1,200 each, I hate early flights",
+  "Tokyo for a week from SF, food + art, budget around €2,500",
   "Surprise me. Beach, chill pace, 5 nights, cheap-ish",
-  "Mexico City from Austin in November, tacos and museums, $900 max",
+  "Mexico City from Austin in November, tacos and museums, €900 max",
 ];
 
 export function ChatPanel({ state }: { state: TripState }) {

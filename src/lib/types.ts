@@ -87,7 +87,7 @@ export interface ItineraryItem {
   type: ItemType;
   title: string;
   details: ItemDetails;
-  costEstimate: number; // per person, USD
+  costEstimate: number; // per person, EUR
   orderIndex: number;
   votes: Record<string, "up" | "down">;
   comments: Comment[];
@@ -159,6 +159,7 @@ export interface Trip {
   committedAt?: string;
   bookedAt?: string;
   bookingSearchState?: "idle" | "searching" | "done" | "failed";
+  friendIds?: string[];
 }
 
 export interface TripState {
@@ -179,4 +180,45 @@ export interface Presence {
   color: string;
   view: string;
   at: number;
+}
+
+/* ------------------------------------------------------------------ */
+/* Social: friends + WhatsApp-style planning chats                    */
+/* ------------------------------------------------------------------ */
+
+export interface Friend {
+  id: string;
+  name: string;
+  color: string;
+  location: string;
+  bio: string;
+  mutualTrips: number;
+  online: boolean;
+  lastActiveAt: string;
+}
+
+export type ThreadKind = "dm" | "group";
+
+export interface SocialThread {
+  id: string;
+  kind: ThreadKind;
+  name?: string;
+  emoji?: string;
+  memberIds: string[];
+  createdAt: string;
+  tripId?: string;
+}
+
+export interface SocialMessage {
+  id: string;
+  threadId: string;
+  senderId: string; // "me" or a Friend id
+  text: string;
+  createdAt: string;
+}
+
+export interface SocialState {
+  friends: Friend[];
+  threads: SocialThread[];
+  messages: SocialMessage[];
 }
